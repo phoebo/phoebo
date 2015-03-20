@@ -1,18 +1,21 @@
 class WelcomeController < ApplicationController
   include Tubesock::Hijack
 
-  def redis
-    @redis ||= Redis.new(host: Rails.configuration.redis.host)
-  end
-
   def index
-    # render plain: Rails.configuration.redis.host
+    # render plain: url
   end
 
   def run
-    redis.append "log", "Starting\n"
-    redis.publish "log", "Starting"
-    SingularityWorker.perform_async('bob', 5)
+    redis.append "log", "Scheduled to launch\n"
+    redis.publish "log", "Scheduled to launch"
+
+    # webhook_url = url_for controller: 'singularity', action: 'webhook'
+    webhook_url = 'http://10.10.3.3:3000/webhook'
+
+    # For synchronous testing
+    TaskWorker.new.perform(webhook_url)
+    # TaskWorker.perform_async()
+
     redirect_to action: 'index'
   end
 

@@ -1,6 +1,6 @@
 class Hash
   # @see https://gist.github.com/henrik/146844
-  def diff(b)
+  def deep_diff(b)
     a = self
     (a.keys | b.keys).inject({}) do |diff, k|
       if a[k] != b[k]
@@ -17,7 +17,7 @@ class Hash
   def each_pair_recursively(parent = [])
     self.each_pair do |k,v|
       if v.is_a?(Hash)
-        v.each_pair_recursive(parent + [k]) { |k,v| yield k, v}
+        v.each_pair_recursively(parent + [k]) { |k,v| yield k, v}
       else
         yield(parent + [k], v)
       end

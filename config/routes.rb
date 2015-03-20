@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   get 'run' => 'welcome#run'
   get 'update_stream' => 'welcome#update_stream'
+  post 'webhook' => 'singularity#webhook'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
