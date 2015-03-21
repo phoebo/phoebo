@@ -3,18 +3,21 @@ class WelcomeController < ApplicationController
 
   def index
     # render plain: url
+    # redis.del('log')
   end
 
   def run
-    redis.append "log", "Scheduled to launch\n"
-    redis.publish "log", "Scheduled to launch"
-
+    # TODO: we should add some security token
     # webhook_url = url_for controller: 'singularity', action: 'webhook'
-    webhook_url = 'http://10.10.3.3:3000/webhook'
+    webhook_url = 'http://10.10.3.230:3000/webhook'
 
-    # For synchronous testing
-    TaskWorker.new.perform(webhook_url)
-    # TaskWorker.perform_async()
+    begin
+      task = Task.create(id: 'test-task')
+      TaskSchedulerJob.perform_later task, webhook_url
+
+    rescue ActiveRecord::RecordNotUnique
+      # TODO: show some error
+    end
 
     redirect_to action: 'index'
   end
@@ -23,7 +26,11 @@ class WelcomeController < ApplicationController
     hijack do |tubesock|
       tubesock.onopen do
 
+        # Task
+        task_id = 'test-task'
+
         # Initial data
+        initial_task = nil
         initial_data = nil
 
         # We need a semaphore for synchronization of initial data with
@@ -37,8 +44,8 @@ class WelcomeController < ApplicationController
           # Create new Redis connection for our thread (can't be shared)
           redis = Redis.new(host: Rails.configuration.redis.host)
 
-          # Send data whenerever something is published
-          redis.subscribe "log" do |on|
+          # Send data whenever something is published
+          redis.subscribe "task-#{task_id}" do |on|
             on.message do |channel, message|
               if semaphore
                 semaphore.lock     # Wait until data are loaded
@@ -46,7 +53,7 @@ class WelcomeController < ApplicationController
                 semaphore = nil    # (we need it only for the send of initial data)
 
                 # TODO: test if message was not contained in initial data
-                if initial_data
+                if true
                   tubesock.send_data message
                 end
               else
@@ -56,8 +63,15 @@ class WelcomeController < ApplicationController
           end
         end
 
-        initial_data = redis.get('log')
-        tubesock.send_data initial_data
+        # Send current task state
+        initial_task = Task.find_by(id: task_id)
+        tubesock.send_data({ state: initial_task.state }.to_json)
+
+        # Send current task log
+        # initial_data = redis.get('log')
+        tubesock.send_data initial_data unless initial_data.nil?
+
+        # Let the subscription thread proceeed
         semaphore.unlock
 
         # Kill the thread when connection is closed
