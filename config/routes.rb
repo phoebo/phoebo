@@ -2,8 +2,10 @@ Rails.application.routes.draw do
   root 'welcome#index'
 
   get 'run' => 'welcome#run'
+  get 'restart' => 'welcome#restart'
   get 'update_stream' => 'welcome#update_stream'
   post 'webhook' => 'singularity#webhook'
+  get 'logspout' => 'logspout#log'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

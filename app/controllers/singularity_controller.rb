@@ -6,6 +6,7 @@ class SingularityController < ApplicationController
   def webhook
     # Request id
     request_id = params[:task][:taskRequest][:request][:id]
+    mesos_id = params[:taskUpdate][:taskId][:id]
 
     # Translate task state
     case params[:taskUpdate][:taskState]
@@ -23,16 +24,19 @@ class SingularityController < ApplicationController
     num_affected = Task.where('id = ?', request_id)
         .where('state < ?', Task.states[new_state])
         .update_all(
-          mesos_id: params[:taskUpdate][:taskId][:id],
+          mesos_id: mesos_id,
           state: Task.states[new_state]
         )
 
-    # Note: This takes care of escaping request_id, because it forces
-    #   only situations when it actually exists
+    # Publish state update
     if num_affected > 0
+      updates_key = Redis.composite_key('task', request_id, 'updates')
 
-      # Publish state change to subscribers
-      redis.publish "task-#{request_id}", { state: new_state }.to_json
+      with_redis do |redis|
+        redis.publish updates_key, { mesos_id: mesos_id, state: new_state }.to_json
+      end
+
+      # TODO: Schedule log save when task is finished (or failed) and clean up Redis memory
     end
 
     # Render basic HTTP 200 reply

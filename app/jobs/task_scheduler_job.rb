@@ -12,18 +12,32 @@ class TaskSchedulerJob < ActiveJob::Base
     install_webhook(webhook_url)
     request_info = create_request(task.id)
 
+    # deploy_info = {
+    #   command: 'phoebo',
+    #   containerInfo: {
+    #     docker: {
+    #       image: 'phoebo/phoebo:latest',
+    #       privileged: true
+    #     }
+    #   }
+    # }
+
+    # create_deploy(request_info, deploy_info)
+    # run_request(task.id, "--help")
+
     deploy_info = {
-      command: 'phoebo',
+      command: '/bin/bash',
+      arguments: ['-c', 'for INDEX in 1 2 3 4 5 6 7 8 9 10; do echo "$INDEX"; sleep 1; done'],
+      # arguments: ['-c', 'while sleep 2; do date -u +%T; done'],
       containerInfo: {
         docker: {
-          image: 'phoebo/phoebo:latest',
-          privileged: true
+          image: 'debian:latest'
         }
       }
     }
 
     create_deploy(request_info, deploy_info)
-    run_request(task.id, "--help")
+    run_request(task.id)
 
     # Update task state to REQUESTED
     update_task_state(task.id, :requested)
@@ -59,11 +73,11 @@ class TaskSchedulerJob < ActiveJob::Base
       id: 'phoebo',
       uri: url,
       type: :TASK
-    }.with_indifferent_access
+    }
 
     response = RestClient.get "#{config.api_url}/webhooks", accept: :json
-    webhook_info = JSON.parse(response.to_str)
-    webhook_info.select! { |v| v['id'] == payload[:id] }
+    webhook_info = JSON.parse(response.to_str, symbolize_names: true)
+    webhook_info.select! { |v| v[:id] == payload[:id] }
 
     if webhook_info.size == 0 || webhook_info[0].deep_diff(payload).size > 0
       RestClient.delete "#{config.api_url}/webhooks/" + Rack::Utils.escape(payload[:id]), accept: :json
@@ -90,13 +104,13 @@ class TaskSchedulerJob < ActiveJob::Base
       response = RestClient.post "#{config.api_url}/requests", payload.to_json, content_type: :json, accept: :json
     end
 
-    JSON.parse(response.to_str)
+    JSON.parse(response.to_str, symbolize_names: true)
   end
 
   # Create Request Deploy if does not exist or existing active deploy is different
   def create_deploy(request_info, deploy_info)
     deploy_payload = {
-      requestId: request_info['request']['id'],
+      requestId: request_info[:request][:id],
       id: 1,
       containerInfo: {
           type: 'DOCKER',
@@ -110,21 +124,21 @@ class TaskSchedulerJob < ActiveJob::Base
         numPorts: 0
       },
       skipHealthchecksOnDeploy: false
-    }.deep_merge(deploy_info).with_indifferent_access
+    }.deep_merge(deploy_info)
 
     # Check for existing active deploy
     active_deploy = false
-    if request_info['activeDeploy']
+    if request_info[:activeDeploy]
 
       # Check if we don't need new deploy (check current active deploy settings)
       active_deploy = true
-      diff = request_info['activeDeploy'].deep_diff(deploy_payload)
+      diff = request_info[:activeDeploy].deep_diff(deploy_payload)
       diff.each_pair_recursively do |keys, value_diff|
-        next if keys[0] == 'id' # We don't care about Deploy ID
+        next if keys[0] == :id # We don't care about Deploy ID
         next unless value_diff[1] # We don't care about options we didn't specified ourselves
 
         active_deploy = false
-        deploy_payload[:id] = request_info['activeDeploy']['id'].to_i + 1
+        deploy_payload[:id] = request_info[:activeDeploy][:id].to_i + 1
         break
       end
     end
@@ -137,10 +151,14 @@ class TaskSchedulerJob < ActiveJob::Base
   end
 
   # Run ONE_OFF request
-  def run_request(request_id, arguments)
+  def run_request(request_id, arguments = nil)
     # @warning Request is not JSON formatted! Arguments must be a string with content type: plain/text.
     # @see https://github.com/HubSpot/Singularity/blob/8a9ccfc259e87d7857665020b0eccb193be58b7b/SingularityService/src/main/java/com/hubspot/singularity/resources/RequestResource.java#L151
-    RestClient.post "#{config.api_url}/requests/request/" + Rack::Utils.escape(request_id) + "/run", arguments, content_type: :text, accept: :json
+    begin
+      RestClient.post "#{config.api_url}/requests/request/" + Rack::Utils.escape(request_id) + "/run", arguments, content_type: :text, accept: :json
+    rescue RestClient::Exception => e
+      raise e unless e.response.code == 409 # Conflict
+    end
   end
 
 end
