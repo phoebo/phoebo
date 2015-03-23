@@ -4,6 +4,8 @@ class SingularityController < ApplicationController
   # TODO: we should check some security token
   # TODO: we should check that client IP is a Singularity host
   def webhook
+    # puts "Webhook:", JSON.pretty_generate(params)
+
     # Request id
     request_id = params[:task][:taskRequest][:request][:id]
     mesos_id = params[:taskUpdate][:taskId][:id]

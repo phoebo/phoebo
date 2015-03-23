@@ -27,7 +27,8 @@ class TaskSchedulerJob < ActiveJob::Base
 
     deploy_info = {
       command: '/bin/bash',
-      arguments: ['-c', 'for INDEX in 1 2 3 4 5 6 7 8 9 10; do echo "$INDEX"; sleep 1; done'],
+      arguments: ['-c', 'export'],
+      # arguments: ['-c', 'for INDEX in 1 2 3 4 5 6 7 8 9 10; do echo "$INDEX"; sleep 1; done'],
       # arguments: ['-c', 'while sleep 2; do date -u +%T; done'],
       containerInfo: {
         docker: {
@@ -55,7 +56,8 @@ class TaskSchedulerJob < ActiveJob::Base
 
     if num_affected > 0
       Sidekiq.redis do |redis|
-        redis.publish "task-#{task_id}", { state: new_state }.to_json
+        updates_key = Redis.composite_key('task', task_id, 'updates')
+        redis.publish updates_key, { state: new_state }.to_json
       end
     end
 
