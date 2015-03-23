@@ -52,6 +52,8 @@ gem 'rest-client', '~> 1.7'
 # https://github.com/ngauthier/tubesock
 gem 'tubesock'
 
+gem 'paloma'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'

@@ -14,4 +14,15 @@
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require turbolinks
+//= require paloma
 //= require_tree .
+
+$(document).on('page:restore', function() {
+  // Manually evaluates the appended script tag.
+  Paloma.executeHook();
+});
+
+$(document).on('page:load', function() {
+  Paloma.executeHook();
+  Paloma.engine.start();
+});

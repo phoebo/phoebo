@@ -27,8 +27,8 @@ class TaskSchedulerJob < ActiveJob::Base
 
     deploy_info = {
       command: '/bin/bash',
-      arguments: ['-c', 'export'],
-      # arguments: ['-c', 'for INDEX in 1 2 3 4 5 6 7 8 9 10; do echo "$INDEX"; sleep 1; done'],
+      # arguments: ['-c', 'export'],
+      arguments: ['-c', 'for INDEX in 1 2 3 4 5 6 7 8 9 10; do echo "$INDEX"; sleep 1; done'],
       # arguments: ['-c', 'while sleep 2; do date -u +%T; done'],
       containerInfo: {
         docker: {

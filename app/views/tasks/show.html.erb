@@ -2,6 +2,10 @@
 
 <%= link_to 'Run', run_task_path(@task), { class: 'btn btn-primary' } %>
 
-<div style="margin-top: 2em;">
-	<pre id="output" style="height: 600px; overflow: auto;" data-url="<%= watch_task_path(@task) %>"></pre>
+<div class="task-detail">
+	<div class="state" style="margin-top: 2em;"></div>
+
+	<div style="margin-top: 2em;">
+		<pre class="log" style="height: 600px; overflow: auto;"></pre>
+	</div>
 </div>
