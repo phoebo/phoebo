@@ -63,7 +63,7 @@ class TasksController < ApplicationController
       end
 
       # We need exclusive Redis connection for our thread (can't be shared)
-      @redis = Redis.new(host: Rails.configuration.redis.host)
+      @redis = Redis.new(host: Rails.configuration.x.redis.host)
     end
 
     # Send message
@@ -99,7 +99,7 @@ class TasksController < ApplicationController
           @redis.subscribe log_updates_key
 
           # We need new connection to redis, because we can't read while subscribed
-          redis = Redis.new(host: Rails.configuration.redis.host)
+          redis = Redis.new(host: Rails.configuration.x.redis.host)
           redis.lrange(log_key, 0, -1).reverse_each do |log_entry|
             process_log(task_id, JSON.parse(log_entry, symbolize_names: true))
           end

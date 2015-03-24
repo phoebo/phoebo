@@ -66,7 +66,7 @@ class TaskSchedulerJob < ActiveJob::Base
 
   # Singularity config
   def config
-    Rails.configuration.singularity
+    Rails.configuration.x.singularity
   end
 
   # Install webhook if necessary
@@ -77,22 +77,22 @@ class TaskSchedulerJob < ActiveJob::Base
       type: :TASK
     }
 
-    response = RestClient.get "#{config.api_url}/webhooks", accept: :json
+    response = RestClient.get "#{config.url}/api/webhooks", accept: :json
     webhook_info = JSON.parse(response.to_str, symbolize_names: true)
     webhook_info.select! { |v| v[:id] == payload[:id] }
 
     if webhook_info.size == 0 || webhook_info[0].deep_diff(payload).size > 0
-      RestClient.delete "#{config.api_url}/webhooks/" + Rack::Utils.escape(payload[:id]), accept: :json
+      RestClient.delete "#{config.url}/api/webhooks/" + Rack::Utils.escape(payload[:id]), accept: :json
     else
       return
     end
 
-    RestClient.post "#{config.api_url}/webhooks", payload.to_json, content_type: :json, accept: :json
+    RestClient.post "#{config.url}/api/webhooks", payload.to_json, content_type: :json, accept: :json
   end
 
   # Create Singularity request if does not exist
   def create_request(request_id, is_service = false)
-    url = "#{config.api_url}/requests/request/" + Rack::Utils.escape(request_id)
+    url = "#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id)
     begin
       response = RestClient.get url, accept: :json
     rescue RestClient::Exception => e
@@ -103,7 +103,7 @@ class TaskSchedulerJob < ActiveJob::Base
         daemon: is_service
       }
 
-      response = RestClient.post "#{config.api_url}/requests", payload.to_json, content_type: :json, accept: :json
+      response = RestClient.post "#{config.url}/api/requests", payload.to_json, content_type: :json, accept: :json
     end
 
     JSON.parse(response.to_str, symbolize_names: true)
@@ -148,7 +148,7 @@ class TaskSchedulerJob < ActiveJob::Base
     # New deploy if necessary
     unless active_deploy
       payload = { deploy: deploy_payload }
-      RestClient.post "#{config.api_url}/deploys", payload.to_json, content_type: :json, accept: :json
+      RestClient.post "#{config.url}/api/deploys", payload.to_json, content_type: :json, accept: :json
     end
   end
 
@@ -157,7 +157,7 @@ class TaskSchedulerJob < ActiveJob::Base
     # @warning Request is not JSON formatted! Arguments must be a string with content type: plain/text.
     # @see https://github.com/HubSpot/Singularity/blob/8a9ccfc259e87d7857665020b0eccb193be58b7b/SingularityService/src/main/java/com/hubspot/singularity/resources/RequestResource.java#L151
     begin
-      RestClient.post "#{config.api_url}/requests/request/" + Rack::Utils.escape(request_id) + "/run", arguments, content_type: :text, accept: :json
+      RestClient.post "#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id) + "/run", arguments, content_type: :text, accept: :json
     rescue RestClient::Exception => e
       raise e unless e.response.code == 409 # Conflict
     end
