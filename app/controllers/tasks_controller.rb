@@ -1,6 +1,8 @@
 class TasksController < ApplicationController
   include Tubesock::Hijack
 
+  before_filter :authenticate_user!
+
   def index
     js url: watch_tasks_path
   end

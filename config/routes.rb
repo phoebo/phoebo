@@ -12,7 +12,12 @@ Rails.application.routes.draw do
     end
   end
 
-  root 'tasks#index'
+  root to: 'tasks#index'
 
   get 'help/invalid-config', to: 'help#invalid_config'
+
+  get 'login', to: 'login#new', as: 'login'
+  get 'login/auth', to: 'login#auth', as: 'login_auth'
+  get 'login/callback', to: 'login#callback', as: 'login_callback'
+  get 'logout', to: 'login#destroy', as: 'logout'
 end
