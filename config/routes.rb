@@ -13,4 +13,6 @@ Rails.application.routes.draw do
   end
 
   root 'tasks#index'
+
+  get 'help/invalid-config', to: 'help#invalid_config'
 end
