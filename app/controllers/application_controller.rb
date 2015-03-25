@@ -16,6 +16,10 @@ class ApplicationController < ActionController::Base
     Sidekiq.redis(&block)
   end
 
+  def gitlab
+    @gitlab_connector ||= GitlabConnector.new(current_user.oauth_token)
+  end
+
   def current_user
     @current_user ||= (session[:current_user] ? User.new(session[:current_user]) : nil)
   end
