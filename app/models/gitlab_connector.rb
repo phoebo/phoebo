@@ -4,26 +4,79 @@ class GitlabConnector
 
   API_PREFIX = '/api/v3'
 
+  def self.def_cached_helper(method_id, id, options, &block)
+    define_method(method_id) do |*args|
+      cache_key = instance_eval { send("cache_key_for_#{id}".to_sym, *args) }
+      Rails.cache.fetch(cache_key, options) do
+         instance_exec(*args, &block)
+      end
+    end
+  end
+
+  def self.def_cached(id, options = {}, &block)
+
+    # Defaults
+    options[:expires_in] = 12.hours unless options[:expires_in]
+
+    # Define cache key getter
+    cached_key_for_method = "cache_key_for_#{id}".to_sym
+    if options.delete(:global)
+      define_method(cached_key_for_method) do |*args|
+        "connector_cache:#{id}" + (args.empty? ? "" : ":" + args.join(':'))
+      end
+    else
+      define_method(cached_key_for_method) do |*args|
+        oauth_token = instance_variable_get(:@oauth_token)
+        "connector_cache:#{oauth_token}:#{id}" + (args.empty? ? "" : ":" + args.join(':'))
+      end
+    end
+
+    # Define purge helper
+    define_method("purge_cached_#{id}".to_sym) do |*args|
+      cache_key = instance_eval { send("cache_key_for_#{id}".to_sym, *args) }
+      Rails.cache.delete(cache_key)
+    end
+
+    # Define cached version
+    def_cached_helper("cached_#{id}".to_sym, id, options, &block)
+
+    # Define uncached version
+    def_cached_helper(id, id, options.merge({ force: true }), &block)
+  end
+
+  # ----------------------------------------------------------------------------
+
   def initialize(oauth_token)
     @oauth_token = oauth_token
     @base_url = Rails.configuration.x.gitlab_server.url + API_PREFIX
   end
 
   # Fetches info about associated user
-  def current_user
+  def_cached :current_user do
     get("#{@base_url}/user").parsed
   end
 
   # Fetches user projects
-  def user_projects
+  def_cached :user_projects do
     get_all "#{@base_url}/projects/owned"
   end
 
   # Fetch single project info
-  def project(project_id)
+  def_cached :project, global: true do |project_id|
     get("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}").parsed
   end
 
+  # Add deploy key to project
+  def add_deploy_key(project_id, name, key)
+    payload = {
+      title: name,
+      key: key
+    }
+
+    post("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}/keys", payload)
+  end
+
+  # ----------------------------------------------------------------------------
   private
 
   # GET all records while handling the pagination
@@ -47,6 +100,12 @@ class GitlabConnector
   def get(url, options = {})
     options.merge!({ accept: :json, authorization: "Bearer #{@oauth_token}" })
     RestClient.get(url, options, &method(:request_block))
+  end
+
+  # Performs HTTP POST request
+  def post(url, payload, options = {})
+    options.merge!({ content_type: :json, accept: :json, authorization: "Bearer #{@oauth_token}" })
+    RestClient.post(url, payload.to_json, options, &method(:request_block))
   end
 
   # Handles response
