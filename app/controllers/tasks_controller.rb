@@ -52,6 +52,10 @@ class TasksController < ApplicationController
   class UpdateStream
     attr_reader :tubesock, :task_id
 
+    def self.redis_factory
+      Redis.new(host: Rails.configuration.x.redis.host)
+    end
+
     def initialize(tubesock, task_id)
       @tubesock  = tubesock
       @task_id   = task_id
@@ -65,7 +69,7 @@ class TasksController < ApplicationController
       end
 
       # We need exclusive Redis connection for our thread (can't be shared)
-      @redis = Redis.new(host: Rails.configuration.x.redis.host)
+      @redis = self.class.redis_factory
     end
 
     # Send message
@@ -101,7 +105,7 @@ class TasksController < ApplicationController
           @redis.subscribe log_updates_key
 
           # We need new connection to redis, because we can't read while subscribed
-          redis = Redis.new(host: Rails.configuration.x.redis.host)
+          redis = redis_factory
           redis.lrange(log_key, 0, -1).reverse_each do |log_entry|
             process_log(task_id, JSON.parse(log_entry, symbolize_names: true))
           end

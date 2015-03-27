@@ -2,6 +2,10 @@ require 'rails_helper'
 
 RSpec.describe Task, type: :model do
 
+  it "has a valid factory" do
+    expect(create(:task)).to be_valid
+  end
+
   describe '.valid_next_state?' do
     it ':fresh => :scheduled_request is valid' do
       expect(described_class.valid_next_state?(:fresh, :scheduled_request)).to be true
