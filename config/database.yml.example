@@ -1,0 +1,19 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: 127.0.0.1
+  username: <your_db_user>
+  password: <your_db_password>
+
+development:
+  <<: *default
+  database: phoebo_dev
+
+test:
+  <<: *default
+  database: phoebo_test
+
+production:
+  <<: *default
+  database: phoebo
