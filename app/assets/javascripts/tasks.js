@@ -37,7 +37,14 @@ TasksController.prototype = {
         for(var taskId in data) break;
 
         if(data[taskId]['log']) {
-          $log.append($('<div>').text(data[taskId]['log']));
+          var log = data[taskId]['log'];
+          log = log.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+              return '&#' + i.charCodeAt(0) + ';';
+          });
+
+          log = log.replace(/\[0;([0-9]+);49m(.+?)\[0m/g, '<span class="console-color-$1">$2</span>');
+
+          $log.append($('<div>').html(log));
           $log.stop().animate({ scrollTop: $log[0].scrollHeight}, 200);
 
         } else if(data[taskId]['state']) {

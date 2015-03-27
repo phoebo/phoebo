@@ -1,3 +1,7 @@
 .task-listing .task .state {
 	padding-left: 1em;
 }
+
+.console-color-31 {
+	color: red;
+}
