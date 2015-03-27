@@ -58,7 +58,12 @@ class GitlabConnector
 
   # Fetches user projects
   def_cached :user_projects do
-    get_all "#{@base_url}/projects/owned"
+    h = {}
+    get_all("#{@base_url}/projects/owned").each do |project|
+      h[project[:id]] = project
+    end
+
+    h
   end
 
   # Fetch single project info
