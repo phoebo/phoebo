@@ -12,4 +12,8 @@ class User
       super
     end
   end
+
+  def gitlab
+    @gitlab_connector ||= GitlabConnector.new(oauth_token)
+  end
 end
