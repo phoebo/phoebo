@@ -10,46 +10,25 @@ class TaskSchedulerJob < ActiveJob::Base
     end
 
     install_webhook(webhook_url)
-    request_info = create_request(task.id)
+    request_info = create_request(task.request_id)
 
-    # deploy_info = {
-    #   command: 'phoebo',
-    #   containerInfo: {
-    #     docker: {
-    #       image: 'phoebo/phoebo:latest',
-    #       privileged: true
-    #     }
-    #   }
-    # }
-
-    # create_deploy(request_info, deploy_info)
-    # run_request(task.id, "--help")
-
-    deploy_info = {
-      command: '/bin/bash',
-      # arguments: ['-c', 'export'],
-      arguments: ['-c', 'for INDEX in 1 2 3 4 5 6 7 8 9 10; do echo "$INDEX"; sleep 1; done'],
-      # arguments: ['-c', 'while sleep 2; do date -u +%T; done'],
-      containerInfo: {
-        docker: {
-          image: 'debian:latest'
-        }
-      }
-    }
-
-    create_deploy(request_info, deploy_info)
-    run_request(task.id)
+    create_deploy(request_info, task.template)
+    run_request(task.request_id)
 
     # Update task state to REQUESTED
     update_task_state(task.id, :requested)
+  rescue
+    # Update task state to REQUEST_FAILED
+    update_task_state(task.id, :request_failed)
+    raise
   end
 
   # ----------------------------------------------------------------------------
   private
 
   def update_task_state(task_id, new_state)
-    num_affected = Task.where('id = ?', task_id)
-        .where('state < ?', Task.states[new_state])
+    num_affected = Task
+        .where(id: task_id, state: Task.valid_prev_states(new_state).for_db)
         .update_all(
           state: Task.states[new_state]
         )

@@ -10,6 +10,13 @@ class SingularityController < ApplicationController
     request_id = params[:task][:taskRequest][:request][:id]
     mesos_id = params[:taskUpdate][:taskId][:id]
 
+    if m = request_id.match(/^phoebo-([0-9]+)$/)
+      task_id = m[1].to_i
+    else
+      head :bad_request
+      return
+    end
+
     # Translate task state
     case params[:taskUpdate][:taskState]
     when 'TASK_LAUNCHED'
@@ -18,13 +25,15 @@ class SingularityController < ApplicationController
       new_state = :running
     when 'TASK_FINISHED'
       new_state = :finished
+    when 'TASK_FAILED'
+      new_state = :failed
     end
 
     # Update task info
     # Note: We need to add the 'state < ?' condition
     #  because notification can arrive in arbitrary order
-    num_affected = Task.where('id = ?', request_id)
-        .where('state < ?', Task.states[new_state])
+    num_affected = Task
+        .where(id: task_id, state: Task.valid_prev_states(new_state).for_db)
         .update_all(
           mesos_id: mesos_id,
           state: Task.states[new_state]
@@ -32,7 +41,7 @@ class SingularityController < ApplicationController
 
     # Publish state update
     if num_affected > 0
-      updates_key = Redis.composite_key('task', request_id, 'updates')
+      updates_key = Redis.composite_key('task', task_id, 'updates')
 
       with_redis do |redis|
         redis.publish updates_key, { mesos_id: mesos_id, state: new_state }.to_json

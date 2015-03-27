@@ -12,7 +12,19 @@ Rails.application.routes.draw do
     end
   end
 
-  root to: 'tasks#index'
+  root to: redirect('tasks')
+
+  resources :projects, only: :index, param: :project_id do
+    get 'refresh', on: :collection
+
+    member do
+      get 'enable'
+      resource :build_requests, only: [ :new ], as: :project_build_request
+    end
+  end
+
+  resources :build_requests, only: [ :new, :create ]
+  resources :build_requests, only: [ :show ], param: :request_secret
 
   get 'help/invalid-config', to: 'help#invalid_config'
 

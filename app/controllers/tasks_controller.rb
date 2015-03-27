@@ -82,7 +82,7 @@ class TasksController < ApplicationController
 
     # Send state change
     def set_task_state(task_id, new_state)
-      if @task_info[task_id][:state] < Task.states[new_state]
+      if @task_info[task_id][:state] < 0 || Task.valid_next_state?(@task_info[task_id][:state], Task.states[new_state])
         @task_info[task_id][:state] = Task.states[new_state]
         send_data(task_id, state: new_state)
       end
