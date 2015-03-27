@@ -72,5 +72,8 @@ group :development, :test do
 
   # RSpec
   gem 'rspec-rails', '~> 3.0'
+
+  # Factory girl
+  gem 'factory_girl_rails'
 end
 
