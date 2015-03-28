@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   post 'webhook' => 'singularity#webhook'
   get 'logspout' => 'logspout#log'
 
+  get 'setup', to: 'setup#index', as: 'setup'
+  get 'setup/watch', to: 'setup#watch', as: 'watch_setup'
+
   resources :tasks do
     get 'watch', on: :collection
 
