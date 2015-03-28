@@ -13,54 +13,19 @@ RSpec.describe SetupJob, type: :job do
     end
 
     it 'sets state and publishes it' do
+      payload = { state: described_class::STATE_FAILED, state_message: "Some error" }.to_json
+
       expect(redis).to receive(:set).with(
        described_class::REDIS_KEY_STATE,
-       described_class::STATE_WORKING
+       payload
       )
 
       expect(redis).to receive(:publish).with(
        described_class::REDIS_KEY_UPDATES,
-       described_class::STATE_WORKING
+       payload
       )
 
-      described_class.new.send(:update_state, described_class::STATE_WORKING)
-    end
-
-    it 'deletes existing message' do
-      expect(redis).to receive(:del).with(
-       described_class::REDIS_KEY_MESSAGE
-      )
-
-      expect(redis).to receive(:set).with(
-       described_class::REDIS_KEY_STATE,
-       described_class::STATE_WORKING
-      )
-
-      expect(redis).to receive(:publish).with(
-       described_class::REDIS_KEY_UPDATES,
-       described_class::STATE_WORKING
-      )
-
-      described_class.new.send(:update_state, described_class::STATE_WORKING, nil)
-    end
-
-    it 'sets message' do
-      expect(redis).to receive(:set).with(
-       described_class::REDIS_KEY_MESSAGE,
-       'Some error message'
-      )
-
-      expect(redis).to receive(:set).with(
-       described_class::REDIS_KEY_STATE,
-       described_class::STATE_WORKING
-      )
-
-      expect(redis).to receive(:publish).with(
-       described_class::REDIS_KEY_UPDATES,
-       described_class::STATE_WORKING
-      )
-
-      described_class.new.send(:update_state, described_class::STATE_WORKING, 'Some error message')
+      described_class.new.send(:update_state, described_class::STATE_FAILED, "Some error")
     end
   end
 
@@ -68,7 +33,7 @@ RSpec.describe SetupJob, type: :job do
 
     context 'success' do
       it 'sends state updates' do
-        expect(subject).to receive(:update_state).with(described_class::STATE_WORKING, nil)
+        expect(subject).to receive(:update_state).with(described_class::STATE_WORKING)
         expect(subject).to receive(:update_state).with(described_class::STATE_DONE)
         allow(subject).to receive(:setup).with(*args).and_return(nil)
         subject.perform(*args)
@@ -76,7 +41,7 @@ RSpec.describe SetupJob, type: :job do
     end
     context 'failure' do
       it 'sends state updates with error message' do
-        expect(subject).to receive(:update_state).with(described_class::STATE_WORKING, nil)
+        expect(subject).to receive(:update_state).with(described_class::STATE_WORKING)
         expect(subject).to receive(:update_state).with(described_class::STATE_FAILED, "My error message")
         allow(subject).to receive(:setup).with(*args) { raise "My error message" }
         subject.perform(*args)
