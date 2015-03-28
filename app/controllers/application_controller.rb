@@ -12,10 +12,6 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def with_redis(&block)
-    Sidekiq.redis(&block)
-  end
-
   def current_user
     @current_user ||= (session[:current_user] ? User.new(session[:current_user]) : nil)
   end

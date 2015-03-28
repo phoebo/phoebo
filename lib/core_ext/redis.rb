@@ -5,3 +5,8 @@ class Redis
     end.join('/')
   end
 end
+
+# Use Sidekiq connection pool
+def with_redis(&block)
+  Sidekiq.redis(&block)
+end
