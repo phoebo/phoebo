@@ -29,9 +29,8 @@ class TasksController < ApplicationController
   def run
     task = Task.find(params[:id])
 
-    webhook_url = 'http://10.10.3.230:3000/webhook'
-    # TaskSchedulerJob.perform_later task, webhook_url
-    TaskSchedulerJob.perform_now task, webhook_url
+    # ScheduleJob.perform_later task
+    ScheduleJob.perform_now task
 
     redirect_to task
   end

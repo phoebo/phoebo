@@ -1,51 +1,10 @@
-class TaskSchedulerJob < ActiveJob::Base
-  queue_as :default
+module SingularityConnector
 
-  def perform(task, webhook_url)
+  attr_reader :config
 
-    # Set task state as REQUESTING
-    # Stop if task was in the invalid state
-    unless update_task_state(task.id, :requesting) > 0
-      return
-    end
-
-    install_webhook(webhook_url)
-    request_info = create_request(task.request_id)
-
-    create_deploy(request_info, task.template)
-    run_request(task.request_id)
-
-    # Update task state to REQUESTED
-    update_task_state(task.id, :requested)
-  rescue
-    # Update task state to REQUEST_FAILED
-    update_task_state(task.id, :request_failed)
-    raise
-  end
-
-  # ----------------------------------------------------------------------------
-  private
-
-  def update_task_state(task_id, new_state)
-    num_affected = Task
-        .where(id: task_id, state: Task.valid_prev_states(new_state).for_db)
-        .update_all(
-          state: Task.states[new_state]
-        )
-
-    if num_affected > 0
-      Sidekiq.redis do |redis|
-        updates_key = Redis.composite_key('task', task_id, 'updates')
-        redis.publish updates_key, { state: new_state }.to_json
-      end
-    end
-
-    num_affected
-  end
-
-  # Singularity config
-  def config
-    Rails.configuration.x.singularity
+  # Constructor
+  def initialize(config = nil)
+    @config = config || Rails.configuration.x.singularity
   end
 
   # Install webhook if necessary
@@ -56,24 +15,24 @@ class TaskSchedulerJob < ActiveJob::Base
       type: :TASK
     }
 
-    response = RestClient.get "#{config.url}/api/webhooks", accept: :json
-    webhook_info = JSON.parse(response.to_str, symbolize_names: true)
+    response = get "#{config.url}/api/webhooks"
+    webhook_info = response.parsed
     webhook_info.select! { |v| v[:id] == payload[:id] }
 
     if webhook_info.size == 0 || webhook_info[0].deep_diff(payload).size > 0
-      RestClient.delete "#{config.url}/api/webhooks/" + Rack::Utils.escape(payload[:id]), accept: :json
+      RestClient.delete("#{config.url}/api/webhooks/" + Rack::Utils.escape(payload[:id]), accept: :json, &method(:request_block))
     else
       return
     end
 
-    RestClient.post "#{config.url}/api/webhooks", payload.to_json, content_type: :json, accept: :json
+    post "#{config.url}/api/webhooks", payload
   end
 
   # Create Singularity request if does not exist
   def create_request(request_id, is_service = false)
     url = "#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id)
     begin
-      response = RestClient.get url, accept: :json
+      response = get url
     rescue RestClient::Exception => e
       raise e unless e.response.code == 404
 
@@ -82,10 +41,10 @@ class TaskSchedulerJob < ActiveJob::Base
         daemon: is_service
       }
 
-      response = RestClient.post "#{config.url}/api/requests", payload.to_json, content_type: :json, accept: :json
+      response = post "#{config.url}/api/requests", payload
     end
 
-    JSON.parse(response.to_str, symbolize_names: true)
+    response.parsed
   end
 
   # Create Request Deploy if does not exist or existing active deploy is different
@@ -127,8 +86,10 @@ class TaskSchedulerJob < ActiveJob::Base
     # New deploy if necessary
     unless active_deploy
       payload = { deploy: deploy_payload }
-      RestClient.post "#{config.url}/api/deploys", payload.to_json, content_type: :json, accept: :json
+      post "#{config.url}/api/deploys", payload
     end
+
+    nil
   end
 
   # Run ONE_OFF request
@@ -136,10 +97,42 @@ class TaskSchedulerJob < ActiveJob::Base
     # @warning Request is not JSON formatted! Arguments must be a string with content type: plain/text.
     # @see https://github.com/HubSpot/Singularity/blob/8a9ccfc259e87d7857665020b0eccb193be58b7b/SingularityService/src/main/java/com/hubspot/singularity/resources/RequestResource.java#L151
     begin
-      RestClient.post "#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id) + "/run", arguments, content_type: :text, accept: :json
+      options = { content_type: :text, accept: :json }
+      RestClient.post("#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id) + "/run", arguments, options, &method(:request_block))
     rescue RestClient::Exception => e
       raise e unless e.response.code == 409 # Conflict
     end
+
+    nil
+  end
+
+  # ----------------------------------------------------------------------------
+
+  # Performs basic HTTP GET request
+  def get(url, options = {})
+    options.merge!({ accept: :json })
+    RestClient.get(url, options, &method(:request_block))
+  end
+
+  # Performs HTTP POST request
+  def post(url, payload, options = {})
+    options.merge!({ content_type: :json, accept: :json })
+    RestClient.post(url, payload.to_json, options, &method(:request_block))
+  end
+
+  # Handles response
+  def request_block(response, request, result, &block)
+
+    # Extend with parsing helper
+    response.define_singleton_method :parsed do
+      unless response.instance_variable_defined? :@parsed
+        response.instance_variable_set(:@parsed, JSON.parse(response, symbolize_names: true))
+      end
+
+      response.instance_variable_get :@parsed
+    end
+
+    response.return!(request, result, &block)
   end
 
 end
