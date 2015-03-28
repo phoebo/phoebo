@@ -51,10 +51,6 @@ class TasksController < ApplicationController
   class UpdateStream
     attr_reader :tubesock, :task_id
 
-    def self.redis_factory
-      Redis.new(host: Rails.configuration.x.redis.host)
-    end
-
     def initialize(tubesock, task_id)
       @tubesock  = tubesock
       @task_id   = task_id
@@ -66,9 +62,6 @@ class TasksController < ApplicationController
           log_counter: -1,
         }
       end
-
-      # We need exclusive Redis connection for our thread (can't be shared)
-      @redis = self.class.redis_factory
     end
 
     # Send message
@@ -100,16 +93,21 @@ class TasksController < ApplicationController
           log_key = Redis.composite_key('mesos-task', mesos_id, 'log')
           log_updates_key = Redis.composite_key('mesos-task', mesos_id, 'log-updates')
 
-          # Subscribe for log updates
-          @redis.subscribe log_updates_key
+          log = nil
 
-          # We need new connection to redis, because we can't read while subscribed
-          redis = redis_factory
-          redis.lrange(log_key, 0, -1).reverse_each do |log_entry|
-            process_log(task_id, JSON.parse(log_entry, symbolize_names: true))
+          with_redis do |redis|
+            # Subscribe for log updates
+            redis.subscribe log_updates_key
+
+            # We need new connection to redis, because we can't read while subscribed
+            redis2 = redis.dup
+            log = redis2.lrange(log_key, 0, -1)
+            redis2.disconnect!
           end
 
-          redis.disconnect!
+          log.reverse_each do |log_entry|
+            process_log(task_id, JSON.parse(log_entry, symbolize_names: true))
+          end
         end
       end
     end
@@ -130,11 +128,13 @@ class TasksController < ApplicationController
       # Subscribe for single task
       if @task_id
         updates_key = Redis.composite_key('task', @task_id, 'updates')
-        @redis.subscribe updates_key do |on|
-          on.subscribe(&on_subscription)
-          on.message do |channel, message|
-            data = JSON.parse(message, symbolize_names: true)
-            process_message(@task_id, data)
+        with_redis do |redis|
+          redis.subscribe updates_key do |on|
+            on.subscribe(&on_subscription)
+            on.message do |channel, message|
+              data = JSON.parse(message, symbolize_names: true)
+              process_message(@task_id, data)
+            end
           end
         end
 
@@ -143,12 +143,14 @@ class TasksController < ApplicationController
         updates_key = Redis.composite_key('task', '*', 'updates')
         channel_rx = /^task\/([^\/]+)\/updates$/
 
-        @redis.psubscribe updates_key do |on|
-          on.psubscribe(&on_subscription)
-          on.pmessage do |_, channel, message|
-            if m = channel_rx.match(channel)
-              data = JSON.parse(message, symbolize_names: true)
-              process_message(m[1], data)
+        with_redis do |redis|
+          redis.psubscribe updates_key do |on|
+            on.psubscribe(&on_subscription)
+            on.pmessage do |_, channel, message|
+              if m = channel_rx.match(channel)
+                data = JSON.parse(message, symbolize_names: true)
+                process_message(m[1], data)
+              end
             end
           end
         end
