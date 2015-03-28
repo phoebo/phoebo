@@ -102,6 +102,8 @@ class Task < ActiveRecord::Base
       val = state.is_a?(Integer) ? state : states[state]
 
       case
+      when val.nil?
+        raise "Invalid task state #{state.inspect}"
       when val >= ERROR_STATE_THRESHOLD
         return val - ERROR_STATE_THRESHOLD
       when val >= STEADY_STATE_THRESHOLD
