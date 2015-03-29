@@ -77,10 +77,12 @@ class TasksController < ApplicationController
     end
 
     # Send state change
-    def set_task_state(task_id, new_state)
+    def set_task_state(task_id, new_state, state_message)
       if @task_info[task_id][:state] < 0 || Task.valid_next_state?(@task_info[task_id][:state], Task.states[new_state])
         @task_info[task_id][:state] = Task.states[new_state]
-        send_data(task_id, state: new_state)
+        data = { state: new_state }
+        data[:state_message] = state_message unless state_message.nil? || state_message.empty?
+        send_data(task_id, data)
       end
     end
 
@@ -160,7 +162,7 @@ class TasksController < ApplicationController
     # Process initial state
     def process_initial_state
       process_task = Proc.new do |task|
-        set_task_state(task.id, task.state)
+        set_task_state(task.id, task.state, task.state_message)
         set_task_mesos_id(task.id, task.mesos_id) unless task.mesos_id.empty?
       end
 
@@ -175,7 +177,7 @@ class TasksController < ApplicationController
 
     # Process recieved update
     def process_message(task_id, data)
-      set_task_state(task_id, data[:state]) unless data[:state].nil?
+      set_task_state(task_id, data[:state], data[:state_message]) unless data[:state].nil?
       set_task_mesos_id(task_id, data[:mesos_id]) unless data[:mesos_id].nil?
       process_log(task_id, data) unless data[:counter].nil?
     end

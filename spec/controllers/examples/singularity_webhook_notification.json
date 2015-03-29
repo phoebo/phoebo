@@ -1,0 +1,368 @@
+{
+  "task": {
+    "taskRequest": {
+      "request": {
+        "id": "phoebo-5",
+        "daemon": false
+      },
+      "deploy": {
+        "requestId": "phoebo-5",
+        "id": "2",
+        "arguments": [
+          "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
+        ],
+        "containerInfo": {
+          "type": "DOCKER",
+          "docker": {
+            "image": "phoebo/phoebo:latest",
+            "privileged": true,
+            "portMappings": null
+          }
+        },
+        "resources": {
+          "cpus": 0.1,
+          "memoryMb": 128.0,
+          "numPorts": 0
+        },
+        "skipHealthchecksOnDeploy": false
+      },
+      "pendingTask": {
+        "pendingTaskId": {
+          "requestId": "phoebo-5",
+          "deployId": "2",
+          "nextRunAt": 1427645113219,
+          "instanceNo": 1,
+          "pendingType": "ONEOFF",
+          "createdAt": 1427645111612,
+          "id": "phoebo-5-2-1427645113219-1-ONEOFF-1427645111612"
+        }
+      }
+    },
+    "taskId": {
+      "requestId": "phoebo-5",
+      "deployId": "2",
+      "instanceNo": 1,
+      "host": "mesos.local",
+      "rackId": "DEFAULT",
+      "startedAt": 1427645113738,
+      "id": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+    },
+    "offer": {
+      "id": {
+        "value": "20150329-113924-16842879-5050-1953-O3512"
+      },
+      "frameworkId": {
+        "value": "Singularity"
+      },
+      "slaveId": {
+        "value": "20150329-113924-16842879-5050-1953-S0"
+      },
+      "hostname": "mesos.local",
+      "resources": [
+        {
+          "name": "cpus",
+          "type": "SCALAR",
+          "scalar": {
+            "value": 1.0
+          },
+          "role": "*"
+        },
+        {
+          "name": "mem",
+          "type": "SCALAR",
+          "scalar": {
+            "value": 999.0
+          },
+          "role": "*"
+        },
+        {
+          "name": "disk",
+          "type": "SCALAR",
+          "scalar": {
+            "value": 34068.0
+          },
+          "role": "*"
+        },
+        {
+          "name": "ports",
+          "type": "RANGES",
+          "ranges": {
+            "range": [
+              {
+                "begin": 31000,
+                "end": 32000
+              }
+            ]
+          },
+          "role": "*"
+        }
+      ],
+      "attributes": null,
+      "executorIds": null
+    },
+    "mesosTask": {
+      "name": "phoebo-5",
+      "taskId": {
+        "value": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+      },
+      "slaveId": {
+        "value": "20150329-113924-16842879-5050-1953-S0"
+      },
+      "resources": [
+        {
+          "name": "cpus",
+          "type": "SCALAR",
+          "scalar": {
+            "value": 0.1
+          }
+        },
+        {
+          "name": "mem",
+          "type": "SCALAR",
+          "scalar": {
+            "value": 128.0
+          }
+        }
+      ],
+      "command": {
+        "environment": {
+          "variables": [
+            {
+              "name": "INSTANCE_NO",
+              "value": "1"
+            },
+            {
+              "name": "TASK_HOST",
+              "value": "mesos.local"
+            },
+            {
+              "name": "TASK_REQUEST_ID",
+              "value": "phoebo-5"
+            },
+            {
+              "name": "TASK_DEPLOY_ID",
+              "value": "2"
+            },
+            {
+              "name": "ESTIMATED_INSTANCE_COUNT",
+              "value": "1"
+            }
+          ]
+        },
+        "shell": false,
+        "arguments": [
+          "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
+        ],
+        "uris": null
+      },
+      "container": {
+        "type": "DOCKER",
+        "docker": {
+          "image": "phoebo/phoebo:latest",
+          "privileged": true,
+          "portMappings": null,
+          "parameters": null
+        },
+        "volumes": null
+      }
+    }
+  },
+  "taskUpdate": {
+    "taskId": {
+      "requestId": "phoebo-5",
+      "deployId": "2",
+      "instanceNo": 1,
+      "host": "mesos.local",
+      "rackId": "DEFAULT",
+      "startedAt": 1427645113738,
+      "id": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+    },
+    "timestamp": 1427645113739,
+    "taskState": "TASK_LAUNCHED"
+  },
+  "controller": "singularity",
+  "action": "webhook",
+  "singularity": {
+    "task": {
+      "taskRequest": {
+        "request": {
+          "id": "phoebo-5",
+          "daemon": false
+        },
+        "deploy": {
+          "requestId": "phoebo-5",
+          "id": "2",
+          "arguments": [
+            "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
+          ],
+          "containerInfo": {
+            "type": "DOCKER",
+            "docker": {
+              "image": "phoebo/phoebo:latest",
+              "privileged": true,
+              "portMappings": null
+            }
+          },
+          "resources": {
+            "cpus": 0.1,
+            "memoryMb": 128.0,
+            "numPorts": 0
+          },
+          "skipHealthchecksOnDeploy": false
+        },
+        "pendingTask": {
+          "pendingTaskId": {
+            "requestId": "phoebo-5",
+            "deployId": "2",
+            "nextRunAt": 1427645113219,
+            "instanceNo": 1,
+            "pendingType": "ONEOFF",
+            "createdAt": 1427645111612,
+            "id": "phoebo-5-2-1427645113219-1-ONEOFF-1427645111612"
+          }
+        }
+      },
+      "taskId": {
+        "requestId": "phoebo-5",
+        "deployId": "2",
+        "instanceNo": 1,
+        "host": "mesos.local",
+        "rackId": "DEFAULT",
+        "startedAt": 1427645113738,
+        "id": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+      },
+      "offer": {
+        "id": {
+          "value": "20150329-113924-16842879-5050-1953-O3512"
+        },
+        "frameworkId": {
+          "value": "Singularity"
+        },
+        "slaveId": {
+          "value": "20150329-113924-16842879-5050-1953-S0"
+        },
+        "hostname": "mesos.local",
+        "resources": [
+          {
+            "name": "cpus",
+            "type": "SCALAR",
+            "scalar": {
+              "value": 1.0
+            },
+            "role": "*"
+          },
+          {
+            "name": "mem",
+            "type": "SCALAR",
+            "scalar": {
+              "value": 999.0
+            },
+            "role": "*"
+          },
+          {
+            "name": "disk",
+            "type": "SCALAR",
+            "scalar": {
+              "value": 34068.0
+            },
+            "role": "*"
+          },
+          {
+            "name": "ports",
+            "type": "RANGES",
+            "ranges": {
+              "range": [
+                {
+                  "begin": 31000,
+                  "end": 32000
+                }
+              ]
+            },
+            "role": "*"
+          }
+        ],
+        "attributes": null,
+        "executorIds": null
+      },
+      "mesosTask": {
+        "name": "phoebo-5",
+        "taskId": {
+          "value": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+        },
+        "slaveId": {
+          "value": "20150329-113924-16842879-5050-1953-S0"
+        },
+        "resources": [
+          {
+            "name": "cpus",
+            "type": "SCALAR",
+            "scalar": {
+              "value": 0.1
+            }
+          },
+          {
+            "name": "mem",
+            "type": "SCALAR",
+            "scalar": {
+              "value": 128.0
+            }
+          }
+        ],
+        "command": {
+          "environment": {
+            "variables": [
+              {
+                "name": "INSTANCE_NO",
+                "value": "1"
+              },
+              {
+                "name": "TASK_HOST",
+                "value": "mesos.local"
+              },
+              {
+                "name": "TASK_REQUEST_ID",
+                "value": "phoebo-5"
+              },
+              {
+                "name": "TASK_DEPLOY_ID",
+                "value": "2"
+              },
+              {
+                "name": "ESTIMATED_INSTANCE_COUNT",
+                "value": "1"
+              }
+            ]
+          },
+          "shell": false,
+          "arguments": [
+            "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
+          ],
+          "uris": null
+        },
+        "container": {
+          "type": "DOCKER",
+          "docker": {
+            "image": "phoebo/phoebo:latest",
+            "privileged": true,
+            "portMappings": null,
+            "parameters": null
+          },
+          "volumes": null
+        }
+      }
+    },
+    "taskUpdate": {
+      "taskId": {
+        "requestId": "phoebo-5",
+        "deployId": "2",
+        "instanceNo": 1,
+        "host": "mesos.local",
+        "rackId": "DEFAULT",
+        "startedAt": 1427645113738,
+        "id": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+      },
+      "timestamp": 1427645113739,
+      "taskState": "TASK_LAUNCHED"
+    }
+  }
+}

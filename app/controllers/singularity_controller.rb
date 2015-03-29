@@ -6,10 +6,11 @@ class SingularityController < ApplicationController
   def webhook
     # puts "Webhook:", JSON.pretty_generate(params)
 
-    # Request id
-    request_id = params[:task][:taskRequest][:request][:id]
-    mesos_id = params[:taskUpdate][:taskId][:id]
+    # Request ID
+    task_id    = nil
+    request_id =  params[:taskUpdate][:taskId][:requestId]
 
+    # Test Request ID format and parse Task ID from it
     if m = request_id.match(/^phoebo-([0-9]+)$/)
       task_id = m[1].to_i
     else
@@ -17,34 +18,39 @@ class SingularityController < ApplicationController
       return
     end
 
+    # Update payload
+    data = {
+      mesos_id: params[:taskUpdate][:taskId][:id]
+    }
+
     # Translate task state
     case params[:taskUpdate][:taskState]
     when 'TASK_LAUNCHED'
-      new_state = :launched
+      data[:state] = :launched
     when 'TASK_RUNNING'
-      new_state = :running
+      data[:state] = :running
     when 'TASK_FINISHED'
-      new_state = :finished
+      data[:state] = :finished
     when 'TASK_FAILED'
-      new_state = :failed
+      data[:state] = :failed
     end
 
     # Update task info
     # Note: We need to add the 'state < ?' condition
     #  because notification can arrive in arbitrary order
+    update = data.dup
+    update[:state] = Task.states[update[:state]]
+
     num_affected = Task
-        .where(id: task_id, state: Task.valid_prev_states(new_state).for_db)
-        .update_all(
-          mesos_id: mesos_id,
-          state: Task.states[new_state]
-        )
+        .where(id: task_id, state: Task.valid_prev_states(update[:state]).for_db)
+        .update_all(update)
 
     # Publish state update
     if num_affected > 0
       updates_key = Redis.composite_key('task', task_id, 'updates')
 
       with_redis do |redis|
-        redis.publish updates_key, { mesos_id: mesos_id, state: new_state }.to_json
+        redis.publish updates_key, data.to_json
       end
 
       # TODO: Schedule log save when task is finished (or failed) and clean up Redis memory
