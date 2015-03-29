@@ -28,29 +28,38 @@ class Task < ActiveRecord::Base
     # Error when sending task to Singularity (async job failed)
     request_failed:     3 + ERROR_STATE_THRESHOLD,
 
+    # Task is being deployed by Singularity
+    deploying:          4,
+
+    # Task is marked as deployed by Singularity
+    deployed:           5,
+
+    # Task deploy failed (sent by Singularity)
+    deploy_failed:      5 + ERROR_STATE_THRESHOLD,
+
     # Task has been launched by Singularity
-    launched:           4,
+    launched:           6,
 
     # Task is marked as running by Singularity
-    running:            5,
+    running:            7,
 
     # Task has finished running and exited with success error (sent by Singularity)
-    finished:           6 + STEADY_STATE_THRESHOLD,
+    finished:           8 + STEADY_STATE_THRESHOLD,
 
     # Task was running but exited with error code (sent by Singularity)
-    failed:             6 + ERROR_STATE_THRESHOLD,
+    failed:             8 + ERROR_STATE_THRESHOLD,
 
     # Task is cheduled for deletion (awaiting ActiveJob)
-    scheduled_delete:   7,
+    scheduled_delete:   9,
 
     # Task is being deleted (async job started)
-    deleting:           8,
+    deleting:          10,
 
     # Task was deleted successfully (async job succeeded)
-    deleted:            9,
+    deleted:           11,
 
     # Task deletion failed (async job failed)
-    delete_failed:      9 + ERROR_STATE_THRESHOLD
+    delete_failed:     11 + ERROR_STATE_THRESHOLD
   }
 
   # Compose string request id (this is used as Singularity request id)

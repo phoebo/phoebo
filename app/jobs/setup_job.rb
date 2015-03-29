@@ -38,8 +38,9 @@ class SetupJob
 
   # ----------------------------------------------------------------------------
 
-  def setup(webhook_url)
+  def setup(task_webhook_url, deploy_webhook_url)
     singularity = SingularityConnector.new
-    singularity.install_webhook(webhook_url)
+    singularity.install_webhook('phoebo-task', task_webhook_url, :TASK)
+    singularity.install_webhook('phoebo-deploy', deploy_webhook_url, :DEPLOY)
   end
 end

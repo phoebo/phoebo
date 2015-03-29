@@ -6,10 +6,16 @@ module Phoebo
     config.after_initialize do |app|
       if defined?(Rails::Server)
         app.reload_routes!
-        webhook_url = app.routes.url_helpers.webhook_url
+
+        # TODO: save secret for later check
+        secret = SecureRandom.hex
+        url_helpers = app.routes.url_helpers
+
+        task_webhook_url = url_helpers.singularity_task_webhook_url(secret)
+        deploy_webhook_url = url_helpers.singularity_deploy_webhook_url(secret)
 
         app.setup_thread = Thread.new do |t|
-          SetupJob.new.perform(webhook_url)
+          SetupJob.new.perform(task_webhook_url, deploy_webhook_url)
         end
       end
     end

@@ -8,11 +8,11 @@ class SingularityConnector
   end
 
   # Install webhook if necessary
-  def install_webhook(url)
+  def install_webhook(id, url, type)
     payload = {
-      id: 'phoebo',
+      id: id,
       uri: url,
-      type: :TASK
+      type: type
     }
 
     response = get "#{config.url}/api/webhooks"
