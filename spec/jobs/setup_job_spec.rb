@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe SetupJob, type: :job do
+RSpec.describe SetupJob do
   subject { described_class.new }
   let(:args) { [ 'http://127.0.0.1:3000/webhook' ] }
 

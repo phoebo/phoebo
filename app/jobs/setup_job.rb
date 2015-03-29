@@ -1,5 +1,4 @@
-class SetupJob < ActiveJob::Base
-  queue_as :default
+class SetupJob
 
   # Redis keys
   REDIS_KEY_UPDATES = Redis.composite_key('setup', 'updates')
@@ -33,6 +32,8 @@ class SetupJob < ActiveJob::Base
         redis.publish(REDIS_KEY_UPDATES, payload)
       end
     end
+
+    state
   end
 
   # ----------------------------------------------------------------------------
