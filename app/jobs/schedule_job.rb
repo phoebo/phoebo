@@ -43,7 +43,7 @@ class ScheduleJob < ActiveJob::Base
   def schedule(task)
     singularity = SingularityConnector.new
     request_info = singularity.create_request(task.request_id)
-    singularity.create_deploy(request_info, task.template)
+    singularity.create_deploy(request_info, task.deploy_template)
     singularity.run_request(task.request_id)
   end
 

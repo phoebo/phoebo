@@ -1,4 +1,4 @@
-module SingularityConnector
+class SingularityConnector
 
   attr_reader :config
 
