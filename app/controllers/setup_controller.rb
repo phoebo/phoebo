@@ -10,7 +10,10 @@ class SetupController < ApplicationController
       return
     end
 
-    js url: watch_setup_path
+    js watch_path: watch_setup_path,
+       root_path: root_path,
+       state_done: SetupJob::STATE_DONE,
+       state_failed: SetupJob::STATE_FAILED
   end
 
   def watch

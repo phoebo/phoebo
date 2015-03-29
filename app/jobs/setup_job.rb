@@ -39,6 +39,7 @@ class SetupJob
   # ----------------------------------------------------------------------------
 
   def setup(webhook_url)
-    puts "Do something"
+    sleep 10
+    # raise "Some error message"
   end
 end
