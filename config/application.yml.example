@@ -1,4 +1,8 @@
 defaults: &defaults
+  url:
+    host: 127.0.0.1
+    port: 3000
+
   gitlab_server:
     url: 'https://gitlab.example.com'
     app_id: ''

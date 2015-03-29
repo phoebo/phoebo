@@ -21,6 +21,11 @@ module Phoebo
       # Remove trailing slashes in URLs
       Rails.configuration.x.gitlab_server.url.chomp!('/')
       Rails.configuration.x.singularity.url.chomp!('/')
+
+      # Apply default URL options
+      Rails.configuration.x.url.each do |k, v|
+        routes.default_url_options[k] = v
+      end
     end
   end
 end
