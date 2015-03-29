@@ -1,5 +1,6 @@
 class LoginController < ApplicationController
   before_filter :authenticate_user!, except: [:new, :callback, :auth, :destroy]
+  skip_filter :check_setup
 
   def new
   end

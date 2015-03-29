@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
 
   before_filter :default_headers
   before_filter :check_config
+  before_filter :check_setup
 
   helper_method :current_user
 
@@ -47,6 +48,16 @@ class ApplicationController < ActionController::Base
 
   def check_config
     redirect_to help_invalid_config_path unless self.class.valid_config?
+  end
+
+  def check_setup
+    unless Rails.application.setup_completed?
+      if request.format == 'application/json'
+        head :service_unavailable
+      else
+        redirect_to setup_path
+      end
+    end
   end
 
   def self.valid_config?

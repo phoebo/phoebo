@@ -2,8 +2,14 @@ class SetupController < ApplicationController
   include Tubesock::Hijack
 
   before_filter :authenticate_user!
+  skip_filter :check_setup
 
   def index
+    if Rails.application.setup_completed?
+      redirect_to root_path
+      return
+    end
+
     js url: watch_setup_path
   end
 
