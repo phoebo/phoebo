@@ -1,17 +1,13 @@
 require 'rails_helper'
+require 'support/redis.rb'
 
 RSpec.describe SetupJob do
+  include_context 'redis'
+
   subject { described_class.new }
   let(:args) { [ 'http://127.0.0.1:3000/webhook' ] }
 
   describe '.update_state' do
-    let(:redis) do
-      redis = instance_double(Redis)
-      allow_any_instance_of(Object).to receive(:with_redis).and_yield(redis)
-      allow(redis).to receive(:multi).and_yield
-      redis
-    end
-
     it 'sets state and publishes it' do
       payload = { state: described_class::STATE_FAILED, state_message: "Some error" }.to_json
 

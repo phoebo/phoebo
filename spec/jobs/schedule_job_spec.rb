@@ -1,15 +1,12 @@
 require 'rails_helper'
+require 'support/redis.rb'
 
 RSpec.describe ScheduleJob, type: :job do
+  include_context 'redis'
+
   subject { described_class.new }
 
   describe '.update_state' do
-    let(:redis) do
-      redis = instance_double(Redis)
-      allow_any_instance_of(Object).to receive(:with_redis).and_yield(redis)
-      redis
-    end
-
     it 'updates Task and sends update to Redis' do
       # Create some task
       task = create(:task)

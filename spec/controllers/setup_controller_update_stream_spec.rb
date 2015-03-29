@@ -1,6 +1,9 @@
 require 'rails_helper'
+require 'support/redis.rb'
 
 RSpec.describe SetupController::UpdateStream do
+  include_context 'redis'
+
   let(:tubesock) { instance_double(Tubesock) }
   subject { described_class.new(tubesock) }
 
@@ -13,9 +16,6 @@ RSpec.describe SetupController::UpdateStream do
   end
 
   it 'sends data' do
-    redis = instance_double(Redis)
-    allow_any_instance_of(Object).to receive(:with_redis).and_yield(redis)
-
     redis_subscription = instance_double(Redis::Subscription)
     allow(redis_subscription).to receive(:subscribe).and_yield
     allow(redis_subscription).to receive(:message).and_yield("", later_state)

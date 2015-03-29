@@ -1,6 +1,10 @@
 require 'rails_helper'
+require 'support/redis.rb'
+
 
 RSpec.describe TasksController::UpdateStream do
+  include_context 'redis'
+
   subject(:tubesock) { instance_double(Tubesock) }
 
   context 'all tasks' do
@@ -11,8 +15,6 @@ RSpec.describe TasksController::UpdateStream do
       allow(psubscription).to receive(:psubscribe).and_yield("task/*/updates", 1)
       allow(psubscription).to receive(:pmessage)
 
-      redis = instance_double(Redis)
-      allow_any_instance_of(Object).to receive(:with_redis).and_yield(redis)
       allow(redis).to receive(:psubscribe).with("task/*/updates").and_yield(psubscription)
     }
 
