@@ -39,7 +39,7 @@ class SetupJob
   # ----------------------------------------------------------------------------
 
   def setup(webhook_url)
-    sleep 10
-    # raise "Some error message"
+    singularity = SingularityConnector.new
+    singularity.install_webhook(webhook_url)
   end
 end
