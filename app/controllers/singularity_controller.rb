@@ -35,6 +35,11 @@ class SingularityController < ApplicationController
       data[:state] = :failed
     end
 
+    # State message
+    if params[:taskUpdate][:statusMessage]
+      data[:state_message] = params[:taskUpdate][:statusMessage]
+    end
+
     # Update task info
     # Note: We need to add the 'state < ?' condition
     #  because notification can arrive in arbitrary order

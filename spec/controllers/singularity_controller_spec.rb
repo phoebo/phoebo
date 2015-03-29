@@ -8,6 +8,10 @@ RSpec.describe SingularityController, type: :controller do
     create(:task)
   end
 
+  let(:redis_key) do
+    Redis.composite_key('task', task.id, 'updates')
+  end
+
   let(:notification_template) do
     data = nil
     File.open(File.expand_path('../examples/singularity_webhook_notification.json', __FILE__), 'r') do |f|
@@ -21,18 +25,6 @@ RSpec.describe SingularityController, type: :controller do
   let(:payload_task_launched) do
     data = notification_template.dup
     data[:taskUpdate][:taskState] = 'TASK_LAUNCHED'
-    data
-  end
-
-  let(:payload_task_running) do
-    data = notification_template.dup
-    data[:taskUpdate][:taskState] = 'TASK_RUNNING'
-    data
-  end
-
-  let(:payload_task_finished) do
-    data = notification_template.dup
-    data[:taskUpdate][:taskState] = 'TASK_FINISHED'
     data
   end
 
@@ -53,8 +45,26 @@ RSpec.describe SingularityController, type: :controller do
     it 'handles TASK_LAUNCHED' do
       data = payload_task_launched
 
-      redis_key = Redis.composite_key('task', task.id, 'updates')
-      redis_payload = { mesos_id: data[:taskUpdate][:taskId][:id], state: :launched }
+      redis_payload = {
+        mesos_id: data[:taskUpdate][:taskId][:id],
+        state: :launched
+      }
+
+      expect(redis).to receive(:publish).with(redis_key, redis_payload.to_json)
+
+      post :webhook, data, format: :json
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'handles TASK_FAILED' do
+      data = payload_task_failed
+
+      redis_payload = {
+        mesos_id: data[:taskUpdate][:taskId][:id],
+        state: :failed,
+        state_message: data[:taskUpdate][:statusMessage]
+      }
+
       expect(redis).to receive(:publish).with(redis_key, redis_payload.to_json)
 
       post :webhook, data, format: :json
