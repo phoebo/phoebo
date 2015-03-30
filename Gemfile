@@ -75,5 +75,8 @@ group :development, :test do
 
   # Factory girl
   gem 'factory_girl_rails'
+
+  # Silence assets
+  gem 'quiet_assets'
 end
 
