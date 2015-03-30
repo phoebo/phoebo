@@ -98,7 +98,7 @@ class SingularityConnector
     # New deploy if necessary
     unless active_deploy
       payload = { deploy: deploy_payload }
-      post "#{config.url}/api/deploys", payload
+      post("#{config.url}/api/deploys", payload)
     end
 
     nil
@@ -142,6 +142,10 @@ class SingularityConnector
       end
 
       response.instance_variable_get :@parsed
+    end
+
+    if response.code >= 400
+      puts "#{request.method.upcase} #{request.url} returned #{response.code}: #{response}"
     end
 
     response.return!(request, result, &block)
