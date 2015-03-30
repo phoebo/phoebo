@@ -5,8 +5,9 @@ Rails.application.routes.draw do
   get 'setup', to: 'setup#index', as: 'setup'
   get 'setup/watch', to: 'setup#watch', as: 'watch_setup'
 
-  post 'singularity/:secret/task', to: 'singularity#task', as: 'singularity_task_webhook'
-  post 'singularity/:secret/deploy', to: 'singularity#deploy', as: 'singularity_deploy_webhook'
+  post 'singularity/:secret/request', to: 'singularity#request_webhook', as: 'singularity_request_webhook'
+  post 'singularity/:secret/task',    to: 'singularity#task_webhook',    as: 'singularity_task_webhook'
+  post 'singularity/:secret/deploy',  to: 'singularity#deploy_webhook',  as: 'singularity_deploy_webhook'
 
   resources :tasks do
     get 'watch', on: :collection

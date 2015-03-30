@@ -64,10 +64,14 @@ class Task < ActiveRecord::Base
 
   # Compose string request id (this is used as Singularity request id)
   def request_id
-    "phoebo-#{self.id}"
+    self.class.request_id(id)
   end
 
   class << self
+    def existing
+      where.not(state: states[:deleted])
+    end
+
     # Returns TRUE if state is a transient state
     def transient_state?(state)
       !steady_state? state
@@ -102,6 +106,18 @@ class Task < ActiveRecord::Base
       end
 
       prev_keys
+    end
+
+    # Return formatted Request ID for Singularity
+    def request_id(task_id)
+      "phoebo-#{task_id}"
+    end
+
+    # Parse Task ID from Singularity Request ID
+    def parse_request_id(request_id)
+      if m = request_id.match(/^phoebo-([0-9]+)$/)
+        return m[1].to_i
+      end
     end
 
     private

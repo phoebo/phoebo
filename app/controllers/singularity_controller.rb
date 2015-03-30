@@ -4,9 +4,31 @@ class SingularityController < ApplicationController
   # TODO: we should check some security token
   # TODO: we should check that client IP is a Singularity host
 
-  def deploy
-    task_id = parse_task_id(params[:deploy][:requestId])
-    head :bad_request and return unless task_id
+  def request_webhook
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    task_id = Task.parse_request_id(params[:request][:id])
+    head :ok and return unless task_id
+
+    data = {}
+
+    case params[:eventType]
+    when 'DELETED'
+      data[:state] = :deleted
+    else
+      logger.warn "Unrecognized REQUEST payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
+      head :ok and return
+    end
+
+    update_task(task_id, data)
+    head :ok
+  end
+
+  def deploy_webhook
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    task_id = Task.parse_request_id(params[:deploy][:requestId]) rescue nil
+    head :ok and return unless task_id
 
     data = {}
 
@@ -21,10 +43,11 @@ class SingularityController < ApplicationController
     head :ok
   end
 
-  def task
-    # Request ID
-    task_id = parse_task_id(params[:taskUpdate][:taskId][:requestId])
-    head :bad_request and return unless task_id
+  def task_webhook
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    task_id = Task.parse_request_id(params[:taskUpdate][:taskId][:requestId]) rescue nil
+    head :ok and return unless task_id
 
     # Update payload
     data = {
@@ -55,12 +78,6 @@ class SingularityController < ApplicationController
   end
 
   private
-
-  def parse_task_id(request_id)
-    if m = request_id.match(/^phoebo-([0-9]+)$/)
-      return m[1].to_i
-    end
-  end
 
   def update_task(task_id, data = {})
     # Update task info

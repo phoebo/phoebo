@@ -16,18 +16,19 @@ RSpec.describe SingularityController, type: :controller do
     data
   end
 
-  # ----------------------------------------------------------------------------
-
-  let(:task_id) { 5 }
-  let(:task_mesos_id) { 'phoebo-5-2-1427645113738-1-mesos.local-DEFAULT' }
-
-  let(:task_template) do
+  def load_json(rel_path)
     data = nil
-    File.open(File.expand_path('../examples/singularity_task_webhook.json', __FILE__), 'r') do |f|
+    File.open(File.expand_path('../' + rel_path, __FILE__), 'r') do |f|
       data = JSON.load(f, nil, symbolize_names: true)
     end
     data
   end
+
+  # ----------------------------------------------------------------------------
+
+  let(:task_id) { 5 }
+  let(:task_mesos_id) { 'phoebo-5-2-1427645113738-1-mesos.local-DEFAULT' }
+  let(:task_template) { load_json('examples/singularity_task_webhook.json') }
 
   let(:payload_task_launched) do
     data = task_template.dup
@@ -51,7 +52,7 @@ RSpec.describe SingularityController, type: :controller do
         state: :launched
       )
 
-      post :task, create_payload(payload_task_launched), format: :json
+      post :task_webhook, create_payload(payload_task_launched), format: :json
       expect(response).to have_http_status(:ok)
     end
 
@@ -62,7 +63,7 @@ RSpec.describe SingularityController, type: :controller do
         state_message: payload_task_failed[:taskUpdate][:statusMessage]
       )
 
-      post :task, create_payload(payload_task_failed), format: :json
+      post :task_webhook, create_payload(payload_task_failed), format: :json
       expect(response).to have_http_status(:ok)
     end
   end
@@ -70,14 +71,7 @@ RSpec.describe SingularityController, type: :controller do
   # ----------------------------------------------------------------------------
 
   let(:deploy_task_id) { 8 }
-
-  let(:deploy_template) do
-    data = nil
-    File.open(File.expand_path('../examples/singularity_deploy_webhook.json', __FILE__), 'r') do |f|
-      data = JSON.load(f, nil, symbolize_names: true)
-    end
-    data
-  end
+  let(:deploy_template) { load_json('examples/singularity_deploy_webhook.json') }
 
   let(:payload_deploy_starting) do
     data = deploy_template.dup
@@ -101,13 +95,34 @@ RSpec.describe SingularityController, type: :controller do
   describe 'POST deploy' do
     it 'handles deploy STARTING' do
       expect(subject).to receive(:update_task).with(deploy_task_id, state: :deploying)
-      post :deploy, create_payload(payload_deploy_starting), format: :json
+      post :deploy_webhook, create_payload(payload_deploy_starting), format: :json
       expect(response).to have_http_status(:ok)
     end
 
     it 'handles deploy FINISHED' do
       expect(subject).to receive(:update_task).with(deploy_task_id, state: :deployed)
-      post :deploy, create_payload(payload_deploy_finished), format: :json
+      post :deploy_webhook, create_payload(payload_deploy_finished), format: :json
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  # ----------------------------------------------------------------------------
+
+  let(:request_task_id) { 2 }
+  let(:request_template) { load_json('examples/singularity_request_webhook.json') }
+
+  let(:payload_request_deleted) do
+    data = request_template.dup
+    data[:eventType] = 'DELETED'
+    data
+  end
+
+  # ----------------------------------------------------------------------------
+
+  describe 'POST request' do
+    it 'handles request DELETED' do
+      expect(subject).to receive(:update_task).with(request_task_id, state: :deleted)
+      post :request_webhook, create_payload(payload_request_deleted), format: :json
       expect(response).to have_http_status(:ok)
     end
   end

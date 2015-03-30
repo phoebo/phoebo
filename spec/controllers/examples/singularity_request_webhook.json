@@ -1,0 +1,9 @@
+{
+  "createdAt": 1427701685679,
+  "user": "testuser",
+  "eventType": "DELETED",
+  "request": {
+    "id": "phoebo-2",
+    "daemon": false
+  }
+}
