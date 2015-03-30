@@ -1,5 +1,6 @@
 class SingularityController < ApplicationController
   protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
+  skip_filter :check_setup
 
   # TODO: we should check some security token
   # TODO: we should check that client IP is a Singularity host
@@ -15,6 +16,8 @@ class SingularityController < ApplicationController
     case params[:eventType]
     when 'DELETED'
       data[:state] = :deleted
+    when 'CREATED'
+      head :ok and return
     else
       logger.warn "Unrecognized REQUEST payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
       head :ok and return
@@ -37,6 +40,9 @@ class SingularityController < ApplicationController
       data[:state] = :deploying
     when 'FINISHED'
       data[:state] = :deployed
+    else
+      logger.warn "Unrecognized DEPLOY payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
+      head :ok and return
     end
 
     update_task(task_id, data)
@@ -64,6 +70,11 @@ class SingularityController < ApplicationController
       data[:state] = :finished
     when 'TASK_FAILED'
       data[:state] = :failed
+    when 'TASK_KILLED'
+      data[:state] = :failed
+    else
+      logger.warn "Unrecognized TASK payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
+      head :ok and return
     end
 
     # State message
