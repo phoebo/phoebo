@@ -39,13 +39,13 @@ class SetupJob
   # ----------------------------------------------------------------------------
 
   def setup(urls)
-    singularity = SingularityConnector.new
+    @singularity = SingularityConnector.new
 
     # Find orphaned tasks
     existing_task_ids = Task.existing.pluck(:id)
     orphaned_task_ids = { ours: existing_task_ids.dup, singularity: [] }
 
-    singularity.requests.each do |data|
+    @singularity.requests.each do |data|
       task_id = Task.parse_request_id(data[:request][:id]) rescue nil
       next unless task_id
 
@@ -61,12 +61,74 @@ class SetupJob
 
     # Delete task requests orphaned by us
     orphaned_task_ids[:singularity].each do |task_id|
-      singularity.remove_request(Task.request_id(task_id))
+      delete_task(task_id)
     end
 
     # Install Singularity webhooks
-    singularity.install_webhook('phoebo-request', urls[:request_webhook], :REQUEST)
-    singularity.install_webhook('phoebo-task', urls[:task_webhook], :TASK)
-    singularity.install_webhook('phoebo-deploy', urls[:deploy_webhook], :DEPLOY)
+    @singularity.install_webhook('phoebo-request', urls[:request_webhook], :REQUEST)
+    @singularity.install_webhook('phoebo-task', urls[:task_webhook], :TASK)
+    @singularity.install_webhook('phoebo-deploy', urls[:deploy_webhook], :DEPLOY)
+
+    # Deploy Logspout service if not deployed
+    create_logspout_task(urls[:logspout])
+  end
+
+  def delete_task(task_id)
+    Task.where(id: task_id).update_all(state: Task.states[:deleting])
+    @singularity.remove_request(Task.request_id(task_id))
+  end
+
+  def create_logspout_task(url)
+    task = Task.where(build_request_id: -1, state: Task.states[:running]).first
+
+    # Note: There is a bug in Singularity 4.1 which ignores BRIDGE networking unless
+    #  portMappings are specified.
+    #
+    # Logspout listens on this port and offers streaming channels for debugging.
+    # This port SHOULD NOT be made publicly available!
+    deploy_template = {
+      arguments: [ url ],
+      containerInfo: {
+        volumes: [
+          { hostPath: '/var/run/docker.sock', containerPath: '/tmp/docker.sock', mode: 'RW' }
+        ],
+        docker: {
+          network: 'BRIDGE',
+          image: 'phoebo/logspout:latest',
+          portMappings: [
+            {
+              containerPortType: 'LITERAL',
+              containerPort: 3000,
+              hostPortType: 'FROM_OFFER',
+              hostPort: 0,
+              protocol: 'tcp'
+            }
+          ]
+        }
+      },
+      resources: {
+        numPorts: 1
+      }
+    }
+
+    # Check if existing task matches our deploy template
+    if task
+      unless task.deploy_template.deep_diff(deploy_template).empty?
+        delete_task(task.id)
+        task = Task.new
+      end
+    else
+      task = Task.new
+    end
+
+    # Do we need to create a new task?
+    unless task.persisted?
+      task.build_request_id = -1
+      task.deploy_template = deploy_template
+      task.save
+    end
+
+    Rails.logger.info "Starting logspout task #{task.id}"
+    ScheduleJob.perform_now(task)
   end
 end

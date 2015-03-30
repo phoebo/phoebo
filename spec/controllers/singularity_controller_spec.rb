@@ -6,10 +6,6 @@ RSpec.describe SingularityController, type: :controller do
 
   let(:secret) { 'f989faa676dc1493b1b813e0c87c6fae' }
 
-  before do
-    allow_any_instance_of(Phoebo::Application).to receive(:setup_completed?).and_return(true)
-  end
-
   def create_payload(template)
     data = template.dup
     data[:secret] = secret

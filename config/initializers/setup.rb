@@ -14,7 +14,8 @@ module Phoebo
         urls = {
           request_webhook: url_helpers.singularity_request_webhook_url(secret),
           task_webhook:    url_helpers.singularity_task_webhook_url(secret),
-          deploy_webhook:  url_helpers.singularity_deploy_webhook_url(secret)
+          deploy_webhook:  url_helpers.singularity_deploy_webhook_url(secret),
+          logspout:        url_helpers.logspout_url(secret, protocol: 'ws://')
         }
 
         app.setup_thread = Thread.new do |t|

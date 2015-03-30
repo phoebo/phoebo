@@ -170,7 +170,7 @@ class TasksController < ApplicationController
         task = Task.find_by(id: @task_id)
         process_task.call(task)
       else
-        all_tasks = Task.all
+        all_tasks = Task.existing
         all_tasks.each(&process_task)
       end
     end

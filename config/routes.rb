@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
 
-  get 'logspout' => 'logspout#log'
-
   get 'setup', to: 'setup#index', as: 'setup'
   get 'setup/watch', to: 'setup#watch', as: 'watch_setup'
 
+  # Logspout end-point
+  get  'logspout/:secret',            to: 'logspout#log',                as: 'logspout'
+
+  # Singularity webhook handlers
   post 'singularity/:secret/request', to: 'singularity#request_webhook', as: 'singularity_request_webhook'
   post 'singularity/:secret/task',    to: 'singularity#task_webhook',    as: 'singularity_task_webhook'
   post 'singularity/:secret/deploy',  to: 'singularity#deploy_webhook',  as: 'singularity_deploy_webhook'
