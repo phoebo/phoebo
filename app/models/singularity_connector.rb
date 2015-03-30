@@ -20,12 +20,20 @@ class SingularityConnector
     webhook_info.select! { |v| v[:id] == payload[:id] }
 
     if webhook_info.size == 0 || webhook_info[0].deep_diff(payload).size > 0
-      RestClient.delete("#{config.url}/api/webhooks/" + Rack::Utils.escape(payload[:id]), accept: :json, &method(:request_block))
+      remove_webhook(payload[:id])
     else
       return
     end
 
     post "#{config.url}/api/webhooks", payload
+  end
+
+  def remove_webhook(id)
+    RestClient.delete("#{config.url}/api/webhooks/" + Rack::Utils.escape(id), accept: :json, &method(:request_block))
+  end
+
+  def requests
+    get("#{config.url}/api/requests").parsed
   end
 
   # Create Singularity request if does not exist
@@ -45,6 +53,10 @@ class SingularityConnector
     end
 
     response.parsed
+  end
+
+  def remove_request(request_id)
+    RestClient.delete("#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id), accept: :json, &method(:request_block))
   end
 
   # Create Request Deploy if does not exist or existing active deploy is different
