@@ -18,8 +18,7 @@ class LoginController < ApplicationController
     user_profile = GitlabConnector.new(token).current_user
 
     # Clear up unnecessary keys (including private_token, we will use strictly oauth token)
-    allowed_keys = [:name, :username, :id, :avatar_url, :is_admin, :email]
-    user_profile.keep_if { |key, _| allowed_keys.include? key }
+    user_profile.keep_if { |key, _| User::DEFAULT_ATTRIBUTES.has_key? key }
 
     # Add OAuth token
     user_profile[:oauth_token] = token

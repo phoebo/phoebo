@@ -1,16 +1,35 @@
 class User
   attr_reader :attributes
 
-  def initialize(hash)
-    @attributes = hash
+  DEFAULT_ATTRIBUTES = {
+    id: nil,
+    name: nil,
+    username: nil,
+    email: nil,
+    is_admin: nil,
+    avatar_url: nil,
+    oauth_token: nil
+  }
+
+  # Declare user with attributes (and fills in default values)
+  def initialize(hash = {})
+    @attributes = DEFAULT_ATTRIBUTES.merge(hash.symbolize_keys)
   end
 
-  def method_missing(meth, *args, &block)
-    if attributes.has_key?(meth.to_s)
-      attributes[meth.to_s]
+  # Define object access to user attributes
+  def method_missing(method_name, *args, &block)
+    if method_name[-1] == '='
+      if @attributes.has_key?(key = method_name[0...-1].to_sym)
+        @attributes[key] = args.first
+        return
+      end
     else
-      super
+      if @attributes.has_key?(method_name)
+        return @attributes[method_name]
+      end
     end
+
+    super
   end
 
   def gitlab

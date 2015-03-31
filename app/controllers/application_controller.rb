@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   private
 
   def current_user
-    @current_user ||= (session[:current_user] ? User.new(session[:current_user]) : nil)
+    @current_user ||= (session[:user_data] ? User.new(session[:user_data]) : nil)
   end
 
   def gitlab
@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
   end
 
   def sign_in(user)
-    session[:current_user] = user
+    session[:user_data] = user
   end
 
   def sign_out
