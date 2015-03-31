@@ -11,11 +11,11 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_user
 
-  private
-
   def current_user
     @current_user ||= (session[:user_data] ? User.new(session[:user_data]) : nil)
   end
+
+  private
 
   def gitlab
     current_user ? current_user.gitlab : nil
