@@ -9,8 +9,8 @@ class LogspoutController < ApplicationController
     hijack do |tubesock|
       tubesock.onmessage do |m|
         data = JSON.parse(m)
-        log_key = Redis.composite_key('mesos-task', data['name'], 'log')
-        log_updates_key = Redis.composite_key('mesos-task', data['name'], 'log-updates')
+        log_key = Redis.key_for_mesos_log(data['name'])
+        log_updates_key = Redis.key_for_mesos_log_updates(data['name'])
 
         # TODO: schedule log save when data reach certain amount
         with_redis do |redis|

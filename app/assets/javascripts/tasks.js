@@ -4,20 +4,47 @@ TasksController.prototype = {
 
   index: function () {
     var _this = this;
-    var $tasks = $('.task-listing');
+    var $container = $('.task-listing');
 
     this._websocketInit();
     this.websocket.onmessage = function (event) {
-      if(event.data.length) {
-        var data = JSON.parse(event.data);
+      var data = JSON.parse(event.data);
+
+      if(data && data != 'subscribed') {
         for(var taskId in data) break;
 
-        var $task = $tasks.find("[data-task-id=\"" + taskId + "\"]")
+        var $task = $container.find("[data-task-id=\"" + taskId + "\"]")
         if($task.length == 0) {
           $task = $('<div class="task" />').attr('data-task-id', taskId);
-          $tasks.prepend($task);
           $task.append($('<a class="name" />').attr('href', _this._taskUrl(taskId)).text(taskId));
           $task.append($('<span class="state" />'));
+
+          var $build = data[taskId]['build']
+            ? $container.find('[data-build-id="' + data[taskId]['build']['id'] + '"]')
+            : $container.find('[data-build-id="0"]');
+
+          if($build.length == 0) {
+            $build = $('<div class="build" />').attr('data-build-id', data[taskId]['build'] ? data[taskId]['build']['id'] : 0);
+
+            var $buildInfo = $('<div class="info" />');
+
+            if(data[taskId]['build']) {
+              $buildInfo.append($('<span class="ns" />').text(data[taskId]['build']['name'][0]));
+              $buildInfo.append($('<span class="ns-separator">/</span>'));
+              $buildInfo.append($('<span class="name" />').text(data[taskId]['build']['name'][1]));
+              $buildInfo.append($('<span class="ref-separator">@</span>'));
+              $buildInfo.append($('<span class="ref" />').text(data[taskId]['build']['ref']));
+            } else {
+              $buildInfo.append($('<span class="name" />').text('Non-project tasks'));
+            }
+
+            $build.append($buildInfo)
+            $build.append($('<div class="tasks" />'));
+
+            $container.prepend($build);
+          }
+
+          $build.find('.tasks').append($task);
         }
 
         $task.find('.state').text(data[taskId]['state']);

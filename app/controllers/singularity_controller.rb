@@ -8,7 +8,7 @@ class SingularityController < ApplicationController
   def request_webhook
     # Singularity sends notification even for task which are not ours,
     # we need to process them too otherwise they will be sent back repeatedly.
-    task_id = Task.parse_request_id(params[:request][:id])
+    task_id = SingularityConnector.parse_request_id(params[:request][:id])
     head :ok and return unless task_id
 
     data = {}
@@ -30,7 +30,7 @@ class SingularityController < ApplicationController
   def deploy_webhook
     # Singularity sends notification even for task which are not ours,
     # we need to process them too otherwise they will be sent back repeatedly.
-    task_id = Task.parse_request_id(params[:deploy][:requestId]) rescue nil
+    task_id = SingularityConnector.parse_request_id(params[:deploy][:requestId]) rescue nil
     head :ok and return unless task_id
 
     data = {}
@@ -52,7 +52,7 @@ class SingularityController < ApplicationController
   def task_webhook
     # Singularity sends notification even for task which are not ours,
     # we need to process them too otherwise they will be sent back repeatedly.
-    task_id = Task.parse_request_id(params[:taskUpdate][:taskId][:requestId]) rescue nil
+    task_id = SingularityConnector.parse_request_id(params[:taskUpdate][:taskId][:requestId]) rescue nil
     head :ok and return unless task_id
 
     # Update payload
@@ -90,7 +90,7 @@ class SingularityController < ApplicationController
 
   private
 
-  def update_task(task_id, data = {})
+  def update_task(ids, data = {})
     # Update task info
     # Note: We need to add the 'state < ?' condition
     #  because notification can arrive in arbitrary order
@@ -98,12 +98,12 @@ class SingularityController < ApplicationController
     update[:state] = Task.states[update[:state]]
 
     num_affected = Task
-        .where(id: task_id, state: Task.valid_prev_states(update[:state]).for_db)
+        .where(id: ids[:task_id], state: Task.valid_prev_states(update[:state]).for_db)
         .update_all(update)
 
     # Publish state update
     if num_affected > 0
-      updates_key = Redis.composite_key('task', task_id, 'updates')
+      updates_key = Redis.key_for_task_updates(ids)
 
       with_redis do |redis|
         redis.publish updates_key, data.to_json

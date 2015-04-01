@@ -62,9 +62,25 @@ class Task < ActiveRecord::Base
     delete_failed:     11 + ERROR_STATE_THRESHOLD
   }
 
-  # Compose string request id (this is used as Singularity request id)
+  # Compose hash of task IDs
+  def ids
+    ids = { }
+    if self.build_request
+      ids[:project_id] = self.build_request.project_id
+      ids[:build_request_id] = self.build_request.id
+    end
+
+    ids[:task_id] = self.id
+    ids
+  end
+
+  # Compose Request ID for Singularity
   def request_id
-    self.class.request_id(id)
+    SingularityConnector.request_id(ids)
+  end
+
+  def updates_channel
+    Redis.key_for_task_updates(ids)
   end
 
   class << self
@@ -106,18 +122,6 @@ class Task < ActiveRecord::Base
       end
 
       prev_keys
-    end
-
-    # Return formatted Request ID for Singularity
-    def request_id(task_id)
-      "phoebo-#{task_id}"
-    end
-
-    # Parse Task ID from Singularity Request ID
-    def parse_request_id(request_id)
-      if m = request_id.match(/^phoebo-([0-9]+)$/)
-        return m[1].to_i
-      end
     end
 
     private

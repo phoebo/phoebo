@@ -36,13 +36,9 @@ module ControllerHelpers
     end
 
     # Define some user projects
+    cached_projects = nil
     allow(obj).to receive(:user_projects) do
-      {
-        37 => {
-          id: 37,
-          name: 'First project'
-        }
-      }
+      cached_projects ||= build_list(:gitlab_project, 5).to_h_by(:id)
     end
   end
 end

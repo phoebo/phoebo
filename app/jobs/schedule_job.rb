@@ -4,34 +4,33 @@ class ScheduleJob < ActiveJob::Base
   def perform(task)
     # Set task state as REQUESTING
     # Stop if task was in the invalid state
-    unless update_task(task.id, state: :requesting) > 0
+    unless update_task(task, state: :requesting) > 0
       return
     end
 
     schedule(task)
 
     # Update task state to REQUESTED
-    update_task(task.id, state: :requested)
+    update_task(task, state: :requested)
 
   rescue => e
     # Update task state to REQUEST_FAILED
-    update_task(task.id, state: :request_failed, state_message: e.message)
+    update_task(task, state: :request_failed, state_message: e.message)
   end
 
   private
 
-  def update_task(task_id, options)
+  def update_task(task, options)
     data = options.dup
     data[:state] = Task.states[data[:state]]
 
     num_affected = Task
-        .where(id: task_id, state: Task.valid_prev_states(options[:state]).for_db)
+        .where(id: task.id, state: Task.valid_prev_states(options[:state]).for_db)
         .update_all(data)
 
     if num_affected > 0
-      updates_key = Redis.composite_key('task', task_id, 'updates')
       with_redis do |redis|
-        redis.publish updates_key, options.to_json
+        redis.publish task.updates_channel, options.to_json
       end
     end
 

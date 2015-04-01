@@ -2,11 +2,11 @@
   "task": {
     "taskRequest": {
       "request": {
-        "id": "phoebo-5",
+        "id": "phoebo-p1-b1-t5",
         "daemon": false
       },
       "deploy": {
-        "requestId": "phoebo-5",
+        "requestId": "phoebo-p1-b1-t5",
         "id": "2",
         "arguments": [
           "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
@@ -28,24 +28,24 @@
       },
       "pendingTask": {
         "pendingTaskId": {
-          "requestId": "phoebo-5",
+          "requestId": "phoebo-p1-b1-t5",
           "deployId": "2",
           "nextRunAt": 1427645113219,
           "instanceNo": 1,
           "pendingType": "ONEOFF",
           "createdAt": 1427645111612,
-          "id": "phoebo-5-2-1427645113219-1-ONEOFF-1427645111612"
+          "id": "phoebo-p1-b1-t5-2-1427645113219-1-ONEOFF-1427645111612"
         }
       }
     },
     "taskId": {
-      "requestId": "phoebo-5",
+      "requestId": "phoebo-p1-b1-t5",
       "deployId": "2",
       "instanceNo": 1,
       "host": "mesos.local",
       "rackId": "DEFAULT",
       "startedAt": 1427645113738,
-      "id": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+      "id": "phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT"
     },
     "offer": {
       "id": {
@@ -101,9 +101,9 @@
       "executorIds": null
     },
     "mesosTask": {
-      "name": "phoebo-5",
+      "name": "phoebo-p1-b1-t5",
       "taskId": {
-        "value": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+        "value": "phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT"
       },
       "slaveId": {
         "value": "20150329-113924-16842879-5050-1953-S0"
@@ -137,7 +137,7 @@
             },
             {
               "name": "TASK_REQUEST_ID",
-              "value": "phoebo-5"
+              "value": "phoebo-p1-b1-t5"
             },
             {
               "name": "TASK_DEPLOY_ID",
@@ -169,13 +169,13 @@
   },
   "taskUpdate": {
     "taskId": {
-      "requestId": "phoebo-5",
+      "requestId": "phoebo-p1-b1-t5",
       "deployId": "2",
       "instanceNo": 1,
       "host": "mesos.local",
       "rackId": "DEFAULT",
       "startedAt": 1427645113738,
-      "id": "phoebo-5-2-1427645113738-1-mesos.local-DEFAULT"
+      "id": "phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT"
     },
     "timestamp": 1427645113739,
     "taskState": "TASK_LAUNCHED"

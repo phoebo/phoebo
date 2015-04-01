@@ -151,4 +151,32 @@ class SingularityConnector
     response.return!(request, result, &block)
   end
 
+  # ----------------------------------------------------------------------------
+
+  module Helpers
+    # Return formatted Request ID for Singularity
+    def request_id(ids)
+      str  = 'phoebo'
+      str += "-p#{ids[:project_id]}" if ids[:project_id]
+      str += "-b#{ids[:build_request_id]}" if ids[:build_request_id]
+      str += "-t#{ids[:task_id]}" if ids[:task_id]
+      str
+    end
+
+    # Parse Task ID from Singularity Request ID
+    def parse_request_id(str)
+      if m = str.match(/^phoebo(-p([0-9]+)-b([0-9]+))?-t([0-9]+)$/)
+        parsed = { }
+        parsed[:project_id] = m[2].to_i if m[2]
+        parsed[:build_request_id] = m[3].to_i if m[3]
+        parsed[:task_id] = m[4].to_i
+
+        return parsed
+      end
+    end
+  end
+
+  include Helpers
+  extend Helpers
+
 end

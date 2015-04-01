@@ -45,9 +45,9 @@ RSpec.describe SetupJob do
     end
   end
 
-  describe '.setup' do
-    it 'doesn\'t fail' do
-      subject.send(:setup, *args)
-    end
-  end
+  # describe '.setup' do
+  #   it 'doesn\'t fail' do
+  #     subject.send(:setup, *args)
+  #   end
+  # end
 end

@@ -54,11 +54,13 @@ class BuildRequestsController < ApplicationController
       )
     end
 
+    payload = TasksController::UpdateStream.build_notification_payload(project_info, task)
+
     with_redis do |redis|
-      updates_key = Redis.composite_key('task', task.id, 'updates')
-      redis.publish updates_key, { state: task.state }.to_json
+      redis.publish task.updates_channel, payload.to_json
     end
 
+    ScheduleJob.perform_later task
     redirect_to tasks_path
   end
 end

@@ -22,8 +22,8 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:task_id) { 5 }
-  let(:task_mesos_id) { 'phoebo-5-2-1427645113738-1-mesos.local-DEFAULT' }
+  let(:task_id) {{ project_id: 1, build_request_id: 1, task_id: 5 }}
+  let(:task_mesos_id) { 'phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT' }
   let(:task_template) { load_json('examples/singularity_task_webhook.json') }
 
   let(:payload_task_launched) do
@@ -66,7 +66,7 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:deploy_task_id) { 8 }
+  let(:deploy_task_id) {{ task_id: 8 }}
   let(:deploy_template) { load_json('examples/singularity_deploy_webhook.json') }
 
   let(:payload_deploy_starting) do
@@ -104,7 +104,7 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:request_task_id) { 2 }
+  let(:request_task_id) {{ task_id: 2 }}
   let(:request_template) { load_json('examples/singularity_request_webhook.json') }
 
   let(:payload_request_deleted) do
@@ -126,18 +126,18 @@ RSpec.describe SingularityController, type: :controller do
   # ----------------------------------------------------------------------------
 
   let(:task) { create(:task) }
-  let(:redis_key) { Redis.composite_key('task', task.id, 'updates') }
+  let(:redis_key) { Redis.key_for_task_updates(task_id: task.id) }
 
   describe '.update_task' do
     it 'updates DB record and publishes update to Redis' do
       update = {
-        mesos_id: 'phoebo-5-2-1427645113738-1-mesos.local-DEFAULT',
+        mesos_id: 'phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT',
         state: :failed,
         state_message: 'Command exited with status 127'
       }
 
       expect(redis).to receive(:publish).with(redis_key, update.to_json)
-      subject.send(:update_task, task.id, update)
+      subject.send(:update_task, { task_id: task.id }, update)
 
       modified_task = Task.find(task.id)
       expect(modified_task.failed?).to be true

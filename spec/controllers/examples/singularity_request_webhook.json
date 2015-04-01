@@ -3,7 +3,7 @@
   "user": "testuser",
   "eventType": "DELETED",
   "request": {
-    "id": "phoebo-2",
+    "id": "phoebo-t2",
     "daemon": false
   }
 }
