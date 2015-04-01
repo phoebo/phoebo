@@ -46,13 +46,14 @@ class SetupJob
     orphaned_task_ids = { ours: existing_task_ids.dup, singularity: [] }
 
     @singularity.requests.each do |data|
-      task_id = Task.parse_request_id(data[:request][:id]) rescue nil
-      next unless task_id
+      ids = @singularity.parse_request_id(data[:request][:id]) rescue nil
+      next unless ids
+      task_id = ids[:task_id]
 
       unless (index = orphaned_task_ids[:ours].find_index(task_id)).nil?
         orphaned_task_ids[:ours].delete_at(index)
       else
-        orphaned_task_ids[:singularity] << task_id
+        orphaned_task_ids[:singularity] << [ task_id, data[:request][:id] ]
       end
     end
 
@@ -61,7 +62,7 @@ class SetupJob
 
     # Delete task requests orphaned by us
     orphaned_task_ids[:singularity].each do |task_id|
-      delete_task(task_id)
+      delete_task(task_id.first, task_id.second)
     end
 
     # Install Singularity webhooks
@@ -73,9 +74,9 @@ class SetupJob
     create_logspout_task(urls[:logspout])
   end
 
-  def delete_task(task_id)
+  def delete_task(task_id, request_id)
     Task.where(id: task_id).update_all(state: Task.states[:deleting])
-    @singularity.remove_request(Task.request_id(task_id))
+    @singularity.remove_request(request_id)
   end
 
   def create_logspout_task(url)
@@ -114,7 +115,7 @@ class SetupJob
     # Check if existing task matches our deploy template
     if task
       unless task.deploy_template.deep_diff(deploy_template).empty?
-        delete_task(task.id)
+        delete_task(task.id, task.request_id)
         task = Task.new
       end
     else
