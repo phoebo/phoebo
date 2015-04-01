@@ -34,12 +34,10 @@ class BuildRequestsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       request = BuildRequest.create(params.require(:build_request).permit(:project_id).merge({ ref: project_info[:default_branch] }))
-
-      # url = build_request_url(request.secret)
-      url = 'http://10.10.3.230:3000' + build_request_path(request.secret)
+      url = build_request_url(request.secret, Rails.configuration.x.url)
 
       template = {
-        arguments: [ "phoebo --from-url \"#{url}\" 2>&1"],
+        arguments: [ 'phoebo', '--from-url', url ],
         containerInfo: {
           docker: {
             image: 'phoebo/phoebo:latest',
@@ -61,6 +59,6 @@ class BuildRequestsController < ApplicationController
     end
 
     ScheduleJob.perform_later task
-    redirect_to tasks_path
+    redirect_to task_path(task)
   end
 end
