@@ -3,6 +3,7 @@ class LoginController < ApplicationController
   skip_filter :check_setup
 
   def new
+    render layout: 'simple'
   end
 
   def auth
@@ -22,6 +23,9 @@ class LoginController < ApplicationController
 
     # Add OAuth token
     user_profile[:oauth_token] = token
+
+    # Add profile url
+    user_profile[:profile_url] = Rails.configuration.x.gitlab_server.url + "/u/#{Rack::Utils.escape(user_profile[:username])}"
 
     if user_profile && sign_in(user_profile)
       redirect_to root_path

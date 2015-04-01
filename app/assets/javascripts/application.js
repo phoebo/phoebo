@@ -12,10 +12,12 @@
 //
 //= require jquery
 //= require jquery_ujs
-//= require twitter/bootstrap
 //= require turbolinks
 //= require paloma
-//= require_tree .
+//= require bootstrap.js
+//= require_self
+//= require sidebar.js
+//= require tasks.js
 
 $(document).on('page:restore', function() {
   // Manually evaluates the appended script tag.

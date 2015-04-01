@@ -40,4 +40,5 @@ Rails.application.routes.draw do
   get 'login/auth', to: 'login#auth', as: 'login_auth'
   get 'login/callback', to: 'login#callback', as: 'login_callback'
   get 'logout', to: 'login#destroy', as: 'logout'
+  delete 'logout', to: 'login#destroy'
 end

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Phoebo</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<body class='ui_mars application'>
+  <header class='navbar navbar-fixed-top navbar-gitlab'>
+    <div class='navbar-inner'>
+      <div class='container'>
+        <div class='app_logo'>
+          <a class="home has_bottom_tooltip" href="/" title=
+          "Dashboard"><%= image_tag "logo.png" %></a>
+        </div>
+
+        <h1 class='title'><a href="/">Phoebo CI</a></h1><button class=
+        'navbar-toggle' data-target='.navbar-collapse' data-toggle=
+        'collapse' type='button'><span class='sr-only'>Toggle
+        navigation</span> <i class='fa fa-bars'></i></button>
+
+        <div class='navbar-collapse collapse'>
+          <ul class='nav navbar-nav'>
+            <!-- <li>
+              <a class="has_bottom_tooltip fa fa-question-circle" data-toggle="tooltip" data-placement="bottom"
+              data-original-title="Help" href="/help" title="Help"></a>
+            </li> -->
+
+            <% if current_user %>
+              <li>
+                <a class="has_bottom_tooltip fa fa-sign-out" data-toggle="tooltip" data-placement="bottom"
+                data-method="delete" data-original-title="Logout"
+                href="<%= logout_path %>" rel="nofollow" title="Logout"></a>
+              </li>
+
+              <% if current_user.avatar_url %>
+                <li class='hidden-xs'>
+                  <a class="profile-pic has_bottom_tooltip" data-toggle="tooltip" data-placement="bottom"
+                  data-original-title="Your profile" href=
+                  "<%= current_user.profile_url %>" id="profile-pic"><img alt=
+                  "User activity" src=
+                  "<%= current_user.avatar_url %>"></a>
+                </li>
+              <% end %>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+

@@ -5,7 +5,7 @@ class HelpController < ApplicationController
     if self.class.valid_config?
       redirect_to root_path
     else
-      # render layout: 'empty'
+      render layout: 'simple'
     end
   end
 end

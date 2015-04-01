@@ -88,6 +88,13 @@ TasksController.prototype = {
       this.websocket.close();
     }
 
+    var _this = this;
+    $(document).on('page:before-unload', function () {
+      if(_this.websocket) {
+        _this.websocket.close();
+      }
+    });
+
     var url = "ws://" + window.location.host + this.params['url'];
     this.websocket = new WebSocket(url);
   },
