@@ -1,13 +1,13 @@
 (function (TasksController) {
 
-TasksController.prototype = {
+// Tasks#index
+TasksController.prototype.index = function () {
+	var websocket = UpdateStream.open();
 
-  index: function () {
-    var _this = this;
-    var $container = $('.task-listing');
+	var _this = this;
+    var $container = $('.task-listing').empty();
 
-    this._websocketInit();
-    this.websocket.onmessage = function (event) {
+    websocket.onmessage = function (event) {
       var data = JSON.parse(event.data);
 
       if(data && data != 'subscribed') {
@@ -50,59 +50,40 @@ TasksController.prototype = {
         $task.find('.state').text(data[taskId]['state']);
       }
     };
-  },
+};
 
-  show: function () {
-    var $wrapper = $('.task-detail'),
-        $state   = $wrapper.find('.state'),
-        $log     = $wrapper.find('.log');
+// Tasks#show
+TasksController.prototype.show = function () {
+	var $wrapper = $('.task-detail'),
+	    $state   = $wrapper.find('.state'),
+	    $log     = $wrapper.find('.log').empty();
 
-    this._websocketInit();
-    this.websocket.onmessage = function (event) {
-      if(event.data.length) {
-        var data = JSON.parse(event.data);
-        for(var taskId in data) break;
+	var websocket = UpdateStream.open();
+	websocket.onmessage = function (event) {
+	  if(event.data.length) {
+	    var data = JSON.parse(event.data);
+	    for(var taskId in data) break;
 
-        if(data[taskId]['log']) {
-          var log = data[taskId]['log'];
-          log = log.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-              return '&#' + i.charCodeAt(0) + ';';
-          });
+	    if(data[taskId]['log']) {
+	      var log = data[taskId]['log'];
+	      log = log.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+	          return '&#' + i.charCodeAt(0) + ';';
+	      });
 
-          log = log.replace(/\[0;([0-9]+);49m(.+?)\[0m/g, '<span class="console-color-$1">$2</span>');
+	      log = log.replace(/\[0;([0-9]+);49m(.+?)\[0m/g, '<span class="console-color-$1">$2</span>');
 
-          $log.append($('<div>').html(log));
-          $log.stop().animate({ scrollTop: $log[0].scrollHeight}, 200);
+	      $log.append($('<div>').html(log));
+	      $log.stop().animate({ scrollTop: $log[0].scrollHeight}, 200);
 
-        } else if(data[taskId]['state']) {
-          $state.text(data[taskId]['state']);
-        }
-      }
-    };
-  },
+	    } else if(data[taskId]['state']) {
+	      $state.text(data[taskId]['state']);
+	    }
+	  }
+	};
+};
 
-  // --------------
-
-  _websocketInit: function () {
-    if(this.websocket) {
-      this.websocket.close();
-    }
-
-    var _this = this;
-    $(document).on('page:before-unload', function () {
-      if(_this.websocket) {
-        _this.websocket.close();
-      }
-    });
-
-    var url = "ws://" + window.location.host + this.params['url'];
-    this.websocket = new WebSocket(url);
-  },
-
-  _taskUrl: function (taskId) {
+TasksController.prototype._taskUrl = function (taskId) {
     return "/tasks/" + encodeURIComponent(taskId)
-  }
-
 };
 
 })(Paloma.controller('Tasks'));

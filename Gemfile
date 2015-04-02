@@ -48,6 +48,7 @@ gem 'rest-client', '~> 1.7'
 # https://github.com/ngauthier/tubesock
 gem 'tubesock'
 
+gem 'jquery-turbolinks'
 gem 'paloma'
 
 # For generation of SSH keys in pure Ruby

@@ -4,12 +4,12 @@ class TasksController < ApplicationController
   before_filter :authenticate_user!
 
   def index
-    js url: watch_tasks_path
+    js update_stream_url: watch_tasks_path
   end
 
   def show
     @task = Task.find(params[:id])
-    js url: watch_task_path
+    js update_stream_url: watch_task_path
   end
 
   def watch

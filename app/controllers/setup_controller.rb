@@ -10,7 +10,7 @@ class SetupController < ApplicationController
       return
     end
 
-    js watch_path: watch_setup_path,
+    js update_stream_url: watch_setup_path,
        root_path: root_path,
        state_done: SetupJob::STATE_DONE,
        state_failed: SetupJob::STATE_FAILED
