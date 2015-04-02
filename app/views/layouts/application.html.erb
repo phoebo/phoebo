@@ -1,5 +1,6 @@
 <%= render 'layouts/head.html.erb' %>
-<div class='page-sidebar-expanded page-with-sidebar'>
+
+<div class='<%= cookies['collapsed_nav'] == 'true' ? 'page-sidebar-collapsed' : 'page-sidebar-expanded' %> page-with-sidebar'>
   <div class='sidebar-wrapper'>
     <ul class='nav nav-sidebar'>
       <li class="<%= current_controller?(:tasks) ? 'active' : '' %>">
@@ -24,7 +25,7 @@
 
     <div class='collapse-nav'>
       <a class="toggle-nav-collapse" href="#" title="Open/Close">
-        <i class="fa fa-angle-left"></i>
+        <i class="fa <%= cookies['collapsed_nav'] == 'true' ? 'fa-angle-right' : 'fa-angle-left' %>"></i>
       </a>
     </div>
   </div>
@@ -37,12 +38,5 @@
       </div>
   </div>
 </div>
-<script>
-(function() {
-  $('.page-sidebar-collapsed .nav-sidebar a').tooltip({
-    placement: "right"
-  });
 
-  }).call(this);
-</script>
 <%= render 'layouts/foot.html.erb' %>
