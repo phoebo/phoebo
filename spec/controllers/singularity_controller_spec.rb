@@ -12,19 +12,11 @@ RSpec.describe SingularityController, type: :controller do
     data
   end
 
-  def load_json(rel_path)
-    data = nil
-    File.open(File.expand_path('../' + rel_path, __FILE__), 'r') do |f|
-      data = JSON.load(f, nil, symbolize_names: true)
-    end
-    data
-  end
-
   # ----------------------------------------------------------------------------
 
   let(:task_id) {{ project_id: 1, build_request_id: 1, task_id: 5 }}
   let(:task_mesos_id) { 'phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT' }
-  let(:task_template) { load_json('examples/singularity_task_webhook.json') }
+  let(:task_template) { load_json('controllers/examples/singularity_task_webhook.json') }
 
   let(:payload_task_launched) do
     data = task_template.dup
@@ -67,7 +59,7 @@ RSpec.describe SingularityController, type: :controller do
   # ----------------------------------------------------------------------------
 
   let(:deploy_task_id) {{ task_id: 8 }}
-  let(:deploy_template) { load_json('examples/singularity_deploy_webhook.json') }
+  let(:deploy_template) { load_json('controllers/examples/singularity_deploy_webhook.json') }
 
   let(:payload_deploy_starting) do
     data = deploy_template.dup
@@ -105,7 +97,7 @@ RSpec.describe SingularityController, type: :controller do
   # ----------------------------------------------------------------------------
 
   let(:request_task_id) {{ task_id: 2 }}
-  let(:request_template) { load_json('examples/singularity_request_webhook.json') }
+  let(:request_template) { load_json('controllers/examples/singularity_request_webhook.json') }
 
   let(:payload_request_deleted) do
     data = request_template.dup

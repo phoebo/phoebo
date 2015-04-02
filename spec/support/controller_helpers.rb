@@ -40,5 +40,18 @@ module ControllerHelpers
     allow(obj).to receive(:user_projects) do
       cached_projects ||= build_list(:gitlab_project, 5).to_h_by(:id)
     end
+
+    allow(obj).to receive(:project) do |project_id|
+      obj.user_projects[project_id]
+    end
+  end
+
+  # Load JSON payload from file
+  def load_json(rel_path)
+    data = nil
+    File.open(File.expand_path('../../' + rel_path, __FILE__), 'r') do |f|
+      data = JSON.load(f, nil, symbolize_names: true)
+    end
+    data
   end
 end

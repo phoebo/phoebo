@@ -11,6 +11,7 @@ FactoryGirl.define do
     sequence(:id)
     name { "Project ##{id}" }
     path { "project-#{id}" }
+    default_branch 'master'
     association :namespace, factory: :gitlab_namespace, strategy: :build
 
     initialize_with { attributes }

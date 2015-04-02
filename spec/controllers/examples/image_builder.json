@@ -1,0 +1,20 @@
+{
+  "id": null,
+  "tasks": [
+    {
+      "name": "web_server",
+      "service": true,
+      "on_demand": true,
+      "image": "phoebo/nodejs-example",
+      "command": "/usr/bin/node",
+      "arguments": [
+        "/app/main.js"
+      ],
+      "ports": [
+        {
+          "tcp": 80
+        }
+      ]
+    }
+  ]
+}
