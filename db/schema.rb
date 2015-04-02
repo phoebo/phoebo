@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150402140615) do
+ActiveRecord::Schema.define(version: 20150402152731) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -41,6 +41,7 @@ ActiveRecord::Schema.define(version: 20150402140615) do
     t.integer "state",            default: 100, null: false
     t.string  "state_message",    default: "",  null: false
     t.string  "name",             default: "",  null: false
+    t.json    "mesos_info",       default: {},  null: false
   end
 
   add_index "tasks", ["build_request_id"], name: "index_tasks_on_build_request_id", using: :btree

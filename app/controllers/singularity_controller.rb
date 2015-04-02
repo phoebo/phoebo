@@ -5,6 +5,11 @@ class SingularityController < ApplicationController
   # TODO: we should check some security token
   # TODO: we should check that client IP is a Singularity host
 
+  # before_filter do
+  #   puts "#{request.method.upcase} #{URI(request.url).path}"
+  #   puts JSON.pretty_generate(params[:singularity])
+  # end
+
   def request_webhook
     # Singularity sends notification even for task which are not ours,
     # we need to process them too otherwise they will be sent back repeatedly.
@@ -80,6 +85,30 @@ class SingularityController < ApplicationController
     # State message
     if params[:taskUpdate][:statusMessage]
       data[:state_message] = params[:taskUpdate][:statusMessage]
+    end
+
+
+    # Offer
+    if params[:task][:offer]
+      # Mesos slave id
+      if params[:task][:offer][:slaveId][:value]
+        data[:mesos_info] ||= {}
+        data[:mesos_info][:slave_id] = params[:task][:offer][:slaveId][:value]
+      end
+
+      # Mesos slave host
+      if params[:task][:offer][:hostname]
+        data[:mesos_info] ||= {}
+        data[:mesos_info][:host] = params[:task][:offer][:hostname]
+      end
+    end
+
+    # Mesos task
+    if params[:task][:mesosTask]
+      if params[:task][:mesosTask][:container][:docker][:portMappings]
+        data[:mesos_info] ||= {}
+        data[:mesos_info][:portMappings] = params[:task][:mesosTask][:container][:docker][:portMappings]
+      end
     end
 
     update_task(task_id, data)

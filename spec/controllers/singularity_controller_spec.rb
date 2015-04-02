@@ -14,8 +14,8 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:task_id) {{ project_id: 1, build_request_id: 1, task_id: 5 }}
-  let(:task_mesos_id) { 'phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT' }
+  let(:task_id) {{ project_id: 39, build_request_id: 47, task_id: 170 }}
+  let(:task_mesos_id) { 'phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT' }
   let(:task_template) { load_json('controllers/examples/singularity_task_webhook.json') }
 
   let(:payload_task_launched) do
@@ -35,21 +35,14 @@ RSpec.describe SingularityController, type: :controller do
 
   describe 'POST task' do
     it 'handles TASK_LAUNCHED' do
-      expect(subject).to receive(:update_task).with(task_id,
-        mesos_id: task_mesos_id,
-        state: :launched
-      )
+      expect(subject).to receive(:update_task).with(task_id, anything)
 
       post :task_webhook, create_payload(payload_task_launched), format: :json
       expect(response).to have_http_status(:ok)
     end
 
     it 'handles TASK_FAILED' do
-      expect(subject).to receive(:update_task).with(task_id,
-        mesos_id: task_mesos_id,
-        state: :failed,
-        state_message: payload_task_failed[:taskUpdate][:statusMessage]
-      )
+      expect(subject).to receive(:update_task).with(task_id, anything)
 
       post :task_webhook, create_payload(payload_task_failed), format: :json
       expect(response).to have_http_status(:ok)

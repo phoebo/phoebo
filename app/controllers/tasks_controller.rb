@@ -55,6 +55,13 @@ class TasksController < ApplicationController
         }
       end
 
+      data[:service] = true if task.service?
+
+      if task.mesos_id
+        data[:mesos] = task.mesos_info || { }
+        data[:mesos][:task_id] = task.mesos_id
+      end
+
       data[:state]         = task.state
       data[:state_message] = task.state_message unless task.state_message.empty?
       data

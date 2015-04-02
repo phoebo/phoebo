@@ -2,60 +2,70 @@
   "task": {
     "taskRequest": {
       "request": {
-        "id": "phoebo-p1-b1-t5",
+        "id": "phoebo-p39-b47-t170",
         "daemon": false
       },
       "deploy": {
-        "requestId": "phoebo-p1-b1-t5",
-        "id": "2",
+        "requestId": "phoebo-p39-b47-t170",
+        "id": "1",
+        "command": "/usr/bin/node",
         "arguments": [
-          "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
+          "/app/main.js"
         ],
         "containerInfo": {
           "type": "DOCKER",
           "docker": {
-            "image": "phoebo/phoebo:latest",
-            "privileged": true,
-            "portMappings": null
+            "image": "phoebo/nodejs-example",
+            "privileged": false,
+            "network": "BRIDGE",
+            "portMappings": [
+              {
+                "containerPortType": "LITERAL",
+                "containerPort": 80,
+                "hostPortType": "FROM_OFFER",
+                "hostPort": 0,
+                "protocol": "tcp"
+              }
+            ]
           }
         },
         "resources": {
           "cpus": 0.1,
           "memoryMb": 128.0,
-          "numPorts": 0
+          "numPorts": 1
         },
         "skipHealthchecksOnDeploy": false
       },
       "pendingTask": {
         "pendingTaskId": {
-          "requestId": "phoebo-p1-b1-t5",
-          "deployId": "2",
-          "nextRunAt": 1427645113219,
+          "requestId": "phoebo-p39-b47-t170",
+          "deployId": "1",
+          "nextRunAt": 1427988067814,
           "instanceNo": 1,
           "pendingType": "ONEOFF",
-          "createdAt": 1427645111612,
-          "id": "phoebo-p1-b1-t5-2-1427645113219-1-ONEOFF-1427645111612"
+          "createdAt": 1427988067621,
+          "id": "phoebo-p39-b47-t170-1-1427988067814-1-ONEOFF-1427988067621"
         }
       }
     },
     "taskId": {
-      "requestId": "phoebo-p1-b1-t5",
-      "deployId": "2",
+      "requestId": "phoebo-p39-b47-t170",
+      "deployId": "1",
       "instanceNo": 1,
       "host": "mesos.local",
       "rackId": "DEFAULT",
-      "startedAt": 1427645113738,
-      "id": "phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT"
+      "startedAt": 1427988069527,
+      "id": "phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT"
     },
     "offer": {
       "id": {
-        "value": "20150329-113924-16842879-5050-1953-O3512"
+        "value": "20150402-084654-16842879-5050-2773-O10443"
       },
       "frameworkId": {
         "value": "Singularity"
       },
       "slaveId": {
-        "value": "20150329-113924-16842879-5050-1953-S0"
+        "value": "20150401-205520-16842879-5050-1950-S0"
       },
       "hostname": "mesos.local",
       "resources": [
@@ -63,7 +73,7 @@
           "name": "cpus",
           "type": "SCALAR",
           "scalar": {
-            "value": 1.0
+            "value": 0.8
           },
           "role": "*"
         },
@@ -71,7 +81,7 @@
           "name": "mem",
           "type": "SCALAR",
           "scalar": {
-            "value": 999.0
+            "value": 743.0
           },
           "role": "*"
         },
@@ -90,6 +100,14 @@
             "range": [
               {
                 "begin": 31000,
+                "end": 31895
+              },
+              {
+                "begin": 31897,
+                "end": 31920
+              },
+              {
+                "begin": 31922,
                 "end": 32000
               }
             ]
@@ -101,14 +119,26 @@
       "executorIds": null
     },
     "mesosTask": {
-      "name": "phoebo-p1-b1-t5",
+      "name": "phoebo-p39-b47-t170",
       "taskId": {
-        "value": "phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT"
+        "value": "phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT"
       },
       "slaveId": {
-        "value": "20150329-113924-16842879-5050-1953-S0"
+        "value": "20150401-205520-16842879-5050-1950-S0"
       },
       "resources": [
+        {
+          "name": "ports",
+          "type": "RANGES",
+          "ranges": {
+            "range": [
+              {
+                "begin": 31916,
+                "end": 31916
+              }
+            ]
+          }
+        },
         {
           "name": "cpus",
           "type": "SCALAR",
@@ -137,30 +167,46 @@
             },
             {
               "name": "TASK_REQUEST_ID",
-              "value": "phoebo-p1-b1-t5"
+              "value": "phoebo-p39-b47-t170"
             },
             {
               "name": "TASK_DEPLOY_ID",
-              "value": "2"
+              "value": "1"
             },
             {
               "name": "ESTIMATED_INSTANCE_COUNT",
               "value": "1"
+            },
+            {
+              "name": "PORT",
+              "value": "31916"
+            },
+            {
+              "name": "PORT0",
+              "value": "31916"
             }
           ]
         },
+        "value": "/usr/bin/node",
         "shell": false,
         "arguments": [
-          "phoebo --from-url \"http://10.10.3.230:3000/build_requests/bc35d5cdc6b3be8ed01d8bc8e7f3998b\" 2>&1"
+          "/app/main.js"
         ],
         "uris": null
       },
       "container": {
         "type": "DOCKER",
         "docker": {
-          "image": "phoebo/phoebo:latest",
-          "privileged": true,
-          "portMappings": null,
+          "image": "phoebo/nodejs-example",
+          "network": "BRIDGE",
+          "portMappings": [
+            {
+              "hostPort": 31916,
+              "containerPort": 80,
+              "protocol": "tcp"
+            }
+          ],
+          "privileged": false,
           "parameters": null
         },
         "volumes": null
@@ -169,15 +215,15 @@
   },
   "taskUpdate": {
     "taskId": {
-      "requestId": "phoebo-p1-b1-t5",
-      "deployId": "2",
+      "requestId": "phoebo-p39-b47-t170",
+      "deployId": "1",
       "instanceNo": 1,
       "host": "mesos.local",
       "rackId": "DEFAULT",
-      "startedAt": 1427645113738,
-      "id": "phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT"
+      "startedAt": 1427988069527,
+      "id": "phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT"
     },
-    "timestamp": 1427645113739,
-    "taskState": "TASK_LAUNCHED"
+    "timestamp": 1427988069816,
+    "taskState": "TASK_RUNNING"
   }
 }
