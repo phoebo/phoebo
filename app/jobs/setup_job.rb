@@ -94,14 +94,35 @@ class SetupJob
         if !(task_info = @singularity.request_tasks(request_id, true)).empty?
           task_info.each do |item|
             task2 = task.dup
-            task2.state = tr_task_state(item[:lastTaskState])
-            task2.run_id = item[:taskId][:id]
+            update_task_data(task2, item)
+
+            task_info = @singularity.task(item[:taskId][:id])
+
+            # Offer
+            if task_info[:task][:offer]
+              # Mesos slave id
+              if task_info[:task][:offer][:slaveId][:value]
+                task.runner_slave_id = task_info[:task][:offer][:slaveId][:value]
+              end
+
+              # Mesos slave host
+              if task_info[:task][:offer][:hostname]
+                task.runner_host = task_info[:task][:offer][:hostname]
+              end
+            end
+
+            # Mesos task
+            if task_info[:task][:mesosTask]
+              if task_info[:task][:mesosTask][:container][:docker][:portMappings]
+                task.port_mappings = task_info[:task][:mesosTask][:container][:docker][:portMappings]
+              end
+            end
+
             tasks << task2
           end
         elsif !(task_info = @singularity.request_tasks(request_id)).empty?
           item = task_info.max_by { |item| item[:updatedAt] }
-          task.state = tr_task_state(item[:lastTaskState])
-          task.run_id = item[:taskId][:id]
+          update_task_data(task, item)
           tasks << task
         else
           task.state = :fresh
@@ -111,6 +132,11 @@ class SetupJob
     end
 
     tasks
+  end
+
+  def update_task_data(task, data)
+    task.state = tr_task_state(data[:lastTaskState])
+    task.run_id = data[:taskId][:id]
   end
 
   def create_logspout_task(url)
