@@ -15,8 +15,7 @@ Rails.application.routes.draw do
     get 'watch', on: :collection
 
     member do
-      get 'watch'
-      get 'run'
+      get 'remove'
     end
   end
 

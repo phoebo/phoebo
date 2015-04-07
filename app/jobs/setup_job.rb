@@ -41,47 +41,79 @@ class SetupJob
   def setup(urls)
     @singularity = SingularityConnector.new
 
-    # Find orphaned tasks
-    existing_task_ids = Task.existing.pluck(:id)
-    orphaned_task_ids = { ours: existing_task_ids.dup, singularity: [] }
-
-    @singularity.requests.each do |data|
-      ids = @singularity.parse_request_id(data[:request][:id]) rescue nil
-      next unless ids
-      task_id = ids[:task_id]
-
-      unless (index = orphaned_task_ids[:ours].find_index(task_id)).nil?
-        orphaned_task_ids[:ours].delete_at(index)
-      else
-        orphaned_task_ids[:singularity] << [ task_id, data[:request][:id] ]
-      end
-    end
-
-    # Mark tasks orphaned by Singularity without our knowledge
-    Task.where(id: orphaned_task_ids[:ours]).update_all(state: Task.states[:deleted])
-
-    # Delete task requests orphaned by us
-    orphaned_task_ids[:singularity].each do |task_id|
-      delete_task(task_id.first, task_id.second)
-    end
+    # Initialize Broker with Singularity tasks
+    Rails.application.broker = Broker.new(fetch_tasks)
 
     # Install Singularity webhooks
     @singularity.install_webhook('phoebo-request', urls[:request_webhook], :REQUEST)
     @singularity.install_webhook('phoebo-task', urls[:task_webhook], :TASK)
     @singularity.install_webhook('phoebo-deploy', urls[:deploy_webhook], :DEPLOY)
 
+    # Kill all logspout tasks
+    @logspout_request_ids.each do |request_id|
+      @singularity.remove_request(request_id)
+    end
+
     # Deploy Logspout service if not deployed
     create_logspout_task(urls[:logspout])
   end
 
-  def delete_task(task_id, request_id)
-    Task.where(id: task_id).update_all(state: Task.states[:deleting])
-    @singularity.remove_request(request_id)
+  def fetch_tasks
+    tasks = []
+    @logspout_request_ids = []
+
+    @singularity.requests.each do |request_info|
+      request_id = request_info[:request][:id]
+      next unless request_id =~ /^phoebo-/
+
+      if request_info[:state] == 'ACTIVE' && request_info[:requestDeployState] && request_info[:requestDeployState][:activeDeploy]
+        task = Broker::Task.new
+
+        # Get task info
+        task.request_id = request_id
+        task.daemon = request_info[:request][:daemon] ? true : false
+
+        # Get deploy info
+        deploy_info = @singularity.request_deploy(request_id, request_info[:requestDeployState][:activeDeploy][:deployId])
+        if deploy_info[:deploy][:metadata]
+          deploy_info[:deploy][:metadata].each do |k, v|
+            if m = k.to_s.match(/^phoebo_(.+)$/)
+              if task.respond_to?(sym = "#{m[1]}=".to_sym)
+                task.send(sym, v)
+              end
+            end
+          end
+        end
+
+        if request_id =~ /-logspout$/
+          task.name += ' (OLD)'
+          @logspout_request_ids << request_id
+        end
+
+        # Apply for each instance
+        if !(task_info = @singularity.request_tasks(request_id, true)).empty?
+          task_info.each do |item|
+            task2 = task.dup
+            task2.state = tr_task_state(item[:lastTaskState])
+            task2.run_id = item[:taskId][:id]
+            tasks << task2
+          end
+        elsif !(task_info = @singularity.request_tasks(request_id)).empty?
+          item = task_info.max_by { |item| item[:updatedAt] }
+          task.state = tr_task_state(item[:lastTaskState])
+          task.run_id = item[:taskId][:id]
+          tasks << task
+        else
+          task.state = :fresh
+          tasks << task
+        end
+      end
+    end
+
+    tasks
   end
 
   def create_logspout_task(url)
-    task = Task.where(build_request_id: -1, state: Task.states[:running]).first
-
     # Note: There is a bug in Singularity 4.1 which ignores BRIDGE networking unless
     #  portMappings are specified.
     #
@@ -109,27 +141,37 @@ class SetupJob
       },
       resources: {
         numPorts: 1
+      },
+      metadata: {
+        phoebo_name: 'Logspout'
       }
     }
 
-    # Check if existing task matches our deploy template
-    if task
-      unless task.deploy_template.deep_diff(deploy_template).empty?
-        delete_task(task.id, task.request_id)
-        task = Task.new
-      end
+    request_id = 'logspout'
+    request_info = @singularity.create_request('logspout', true)
+
+    Rails.application.broker.new_task do |task|
+      task.state = Broker::Task::STATE_REQUESTED
+      task.name = 'Logspout'
+      task.request_id = request_info[:request][:id]
+      task.daemon = true
+    end
+
+    @singularity.create_deploy(request_info, deploy_template)
+  end
+
+  def tr_task_state(state)
+    case state
+    when 'TASK_LAUNCHED'
+      state = :launched
+    when 'TASK_RUNNING'
+      state = :running
+    when 'TASK_FINISHED'
+      state = :finished
+    when 'TASK_FAILED', 'TASK_KILLED', 'TASK_LOST'
+      state = :failed
     else
-      task = Task.new
+      :fresh
     end
-
-    # Do we need to create a new task?
-    unless task.persisted?
-      task.build_request_id = -1
-      task.deploy_template = deploy_template
-      task.save
-    end
-
-    Rails.logger.info "Starting logspout task #{task.id}"
-    ScheduleJob.perform_now(task)
   end
 end

@@ -36,23 +36,45 @@ class SingularityConnector
     get("#{config.url}/api/requests").parsed
   end
 
-  # Create Singularity request if does not exist
-  def create_request(request_id, is_service = false)
-    url = "#{config.url}/api/requests/request/" + Rack::Utils.escape(request_id)
-    begin
-      response = get url
-    rescue RestClient::Exception => e
-      raise e unless e.response.code == 404
+  def request_deploy(request_id, deploy_id)
+    get("#{config.url}/api/history/request/" + Rack::Utils.escape(request_id) + "/deploy/" + Rack::Utils.escape(deploy_id)).parsed
+  end
 
+  def request_tasks(request_id, active = false)
+    get("#{config.url}/api/history/request/" + Rack::Utils.escape(request_id) + "/tasks" + (active ? '/active' : '')).parsed
+  end
+
+  def task(task_id)
+    get("#{config.url}/api/history/task/" + Rack::Utils.escape(task_id)).parsed
+  end
+
+  # Create Singularity request
+  def create_request(request_id_hint = nil, is_service = false)
+    i = 1
+    begin
       payload = {
-        id: request_id,
+        id: 'phoebo-' + Time.now.to_i.to_s + "-#{i}",
         daemon: is_service
       }
 
-      response = post "#{config.url}/api/requests", payload
+      payload[:id] += '-' + request_id_hint if request_id_hint
+
+      response = post("#{config.url}/api/requests", payload).parsed
+
+      # Try again if it is some existing request (ID collision)
+      if response[:request][:requestDeployState]
+        raise RestClient::BadRequest
+      end
+
+    # Try again if request fails because we are trying to change some existing
+    # request in way we are not allowed to
+    rescue RestClient::BadRequest
+      i += 1
+      retry if i < 5
+      return nil
     end
 
-    response.parsed
+    response
   end
 
   def remove_request(request_id)
@@ -96,12 +118,13 @@ class SingularityConnector
     end
 
     # New deploy if necessary
-    unless active_deploy
+    if active_deploy
+      false
+    else
       payload = { deploy: deploy_payload }
       post("#{config.url}/api/deploys", payload)
+      true
     end
-
-    nil
   end
 
   # Run ONE_OFF request

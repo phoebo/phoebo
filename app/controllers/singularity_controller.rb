@@ -10,135 +10,133 @@ class SingularityController < ApplicationController
   #   puts JSON.pretty_generate(params[:singularity])
   # end
 
-  def request_webhook
-    # Singularity sends notification even for task which are not ours,
-    # we need to process them too otherwise they will be sent back repeatedly.
-    task_id = SingularityConnector.parse_request_id(params[:request][:id])
-    head :ok and return unless task_id
+  def task(request_id, run_id = nil)
+    task_id, task = broker.tasks.find do |_, task|
+      task.request_id == request_id &&
+        (run_id.nil? || (task.run_id.nil? || task.run_id == run_id))
+    end
 
-    data = {}
+    task
+  end
+
+  def request_webhook
+    task = task(request_id = params[:request][:id])
+    raise "No task found for request id: #{request_id}" unless task
 
     case params[:eventType]
     when 'DELETED'
-      data[:state] = :deleted
-    when 'CREATED'
-      head :ok and return
+      broker.remove_task(task.id)
+
+    when 'CREATED', 'UPDATED'
+      broker.update_task(task.id) do |task|
+        if task.valid_next_state?(Broker::Task::STATE_REQUESTED)
+          task.state = Broker::Task::STATE_REQUESTED
+        end
+      end
+
     else
-      logger.warn "Unrecognized REQUEST payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
-      head :ok and return
+      raise "Unexpected event type"
     end
 
-    update_task(task_id, data)
+    head :ok
+
+  rescue => e
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    logger.warn "Error while processing request webhook: #{e.message}\n#{JSON.pretty_generate(params[:singularity])}"
     head :ok
   end
 
   def deploy_webhook
-    # Singularity sends notification even for task which are not ours,
-    # we need to process them too otherwise they will be sent back repeatedly.
-    task_id = SingularityConnector.parse_request_id(params[:deploy][:requestId]) rescue nil
-    head :ok and return unless task_id
 
-    data = {}
+    task = task(request_id = params[:deployMarker][:requestId])
+    raise "No task found for request id: #{request_id}" unless task
 
     case params[:eventType]
     when 'STARTING'
-      data[:state] = :deploying
+      state = Broker::Task::STATE_DEPLOYING
     when 'FINISHED'
-      data[:state] = :deployed
+      state = Broker::Task::STATE_DEPLOYED
     else
-      logger.warn "Unrecognized DEPLOY payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
-      head :ok and return
+      raise "Unexpected event type"
     end
 
-    update_task(task_id, data)
+    broker.update_task(task.id) do |task|
+      if task.valid_next_state?(state)
+        task.state = state
+      end
+    end
+
+    head :ok
+  rescue => e
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    logger.warn "Error while processing deploy webhook: #{e.message}\n#{JSON.pretty_generate(params[:singularity])}"
     head :ok
   end
 
   def task_webhook
-    # Singularity sends notification even for task which are not ours,
-    # we need to process them too otherwise they will be sent back repeatedly.
-    task_id = SingularityConnector.parse_request_id(params[:taskUpdate][:taskId][:requestId]) rescue nil
-    head :ok and return unless task_id
+    task = task(
+      request_id = params[:taskUpdate][:taskId][:requestId],
+      run_id = params[:taskUpdate][:taskId][:id]
+    )
 
-    # Update payload
-    data = {
-      mesos_id: params[:taskUpdate][:taskId][:id]
-    }
+    raise "No task found for request id: #{request_id}, run id: #{run_id}" unless task
 
     # Translate task state
     case params[:taskUpdate][:taskState]
     when 'TASK_LAUNCHED'
-      data[:state] = :launched
+      state = :launched
     when 'TASK_RUNNING'
-      data[:state] = :running
+      state = :running
     when 'TASK_FINISHED'
-      data[:state] = :finished
+      state = :finished
     when 'TASK_FAILED'
-      data[:state] = :failed
+      state = :failed
     when 'TASK_KILLED'
-      data[:state] = :failed
+      state = :failed
+    when 'TASK_LOST'
+      broker.remove_task(task.id)
+      head :ok
+      return
     else
-      logger.warn "Unrecognized TASK payload received from Singularity: #{JSON.pretty_generate(params[:singularity])}"
-      head :ok and return
+      raise "Unexpected task state"
     end
 
-    # State message
-    if params[:taskUpdate][:statusMessage]
-      data[:state_message] = params[:taskUpdate][:statusMessage]
-    end
+    broker.update_task(task.id) do |task|
+      # Check task state
+      if task.valid_next_state?(state)
+        task.state = state
+        task.state_message = params[:taskUpdate][:statusMessage] ? params[:taskUpdate][:statusMessage] : nil
+        task.run_id = params[:taskUpdate][:taskId][:id]
 
+        # Offer
+        if params[:task][:offer]
+          # Mesos slave id
+          if params[:task][:offer][:slaveId][:value]
+            task.runner_slave_id = params[:task][:offer][:slaveId][:value]
+          end
 
-    # Offer
-    if params[:task][:offer]
-      # Mesos slave id
-      if params[:task][:offer][:slaveId][:value]
-        data[:mesos_info] ||= {}
-        data[:mesos_info][:slave_id] = params[:task][:offer][:slaveId][:value]
+          # Mesos slave host
+          if params[:task][:offer][:hostname]
+            task.runner_host = params[:task][:offer][:hostname]
+          end
+        end
+
+        # Mesos task
+        if params[:task][:mesosTask]
+          if params[:task][:mesosTask][:container][:docker][:portMappings]
+            task.port_mappings = params[:task][:mesosTask][:container][:docker][:portMappings]
+          end
+        end
       end
-
-      # Mesos slave host
-      if params[:task][:offer][:hostname]
-        data[:mesos_info] ||= {}
-        data[:mesos_info][:host] = params[:task][:offer][:hostname]
-      end
     end
 
-    # Mesos task
-    if params[:task][:mesosTask]
-      if params[:task][:mesosTask][:container][:docker][:portMappings]
-        data[:mesos_info] ||= {}
-        data[:mesos_info][:portMappings] = params[:task][:mesosTask][:container][:docker][:portMappings]
-      end
-    end
-
-    update_task(task_id, data)
-
-    # Render basic HTTP 200 reply
-    render plain: "ok"
-  end
-
-  private
-
-  def update_task(ids, data = {})
-    # Update task info
-    # Note: We need to add the 'state < ?' condition
-    #  because notification can arrive in arbitrary order
-    update = data.dup
-    update[:state] = Task.states[update[:state]]
-
-    num_affected = Task
-        .where(id: ids[:task_id], state: Task.valid_prev_states(update[:state]).for_db)
-        .update_all(update)
-
-    # Publish state update
-    if num_affected > 0
-      updates_key = Redis.key_for_task_updates(ids)
-
-      with_redis do |redis|
-        redis.publish updates_key, data.to_json
-      end
-
-      # TODO: Schedule log save when task is finished (or failed) and clean up Redis memory
-    end
+    head :ok
+  rescue => e
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    logger.warn "Error while processing task webhook: #{e.message}\n#{JSON.pretty_generate(params[:singularity])}"
+    head :ok
   end
 end

@@ -15,6 +15,10 @@ class ApplicationController < ActionController::Base
     @current_user ||= (session[:user_data] ? User.new(session[:user_data]) : nil)
   end
 
+  def broker
+    Rails.application.broker
+  end
+
   private
 
   def gitlab

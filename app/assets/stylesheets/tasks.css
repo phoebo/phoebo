@@ -1,7 +1,274 @@
-.task-listing .task .state {
-	padding-left: 1em;
+.task-listing {
+	width: 100%;
+	margin: 0 auto;
 }
 
-.console-color-31 {
-	color: red;
+@media (min-width: 968px) {
+	.task-listing {
+		width: 90%;
+	}
 }
+
+
+@media (min-width: 1200px) {
+	.task-listing {
+		width: 80%;
+	}
+}
+
+/* Task container (build) */
+.task-container {
+	margin-top: 35px;
+}
+
+.task-container:first-child {
+	margin-top: 40px;
+}
+
+.task-container HEADER {
+	padding: 1em 30px;
+	border-top: 1px solid #f3f3f3;
+	border-bottom: 1px solid #f3f3f3;
+	margin-bottom: 14px;
+}
+
+.task-container HEADER .ns,
+.task-container HEADER .name {
+	color: #525252;
+}
+
+.task-container HEADER .ns-separator,
+.task-container HEADER .ref-separator {
+	padding: 0 0.5em;
+	color: #d8d8d8;
+}
+
+/* Tasks wrapper */
+.task-container .panel-collapse {
+	padding-left: 1.5em;
+	padding-right: 1.5em;
+}
+
+.task-container .task-info,
+.task-container .task-extended-info {
+	background: #f9f9f9;
+	border: 1px solid #f3f3f3;
+	margin-bottom: 4px;
+	line-height: 31px;
+	border-bottom-right-radius: 3px;
+	border-top-right-radius: 3px;
+	font-size: 13px;
+	color: #323232;
+}
+
+.task-container .task-info > *,
+.task-container .task-extended-info > * {
+	padding: 9px 0;
+	display: inline-block;
+}
+
+.task-container .task-extended-info {
+	line-height: 20px;
+	margin-left: 38px;
+	font-size: 11px;
+	color: #9d9d9d;
+	margin-bottom: 10px;
+	max-height: 250px;
+	overflow: auto;
+}
+
+.task-container .task-extended-info.info {
+	padding-bottom: 10px;
+}
+
+.task-container .task-extended-info > * {
+	padding: 3px 0;
+	display: inline-block;
+	margin: 0;
+}
+
+.task-container .task-extended-info .task-stripe {
+
+}
+
+.task-container .task-extended-info P:first-of-type {
+	margin-left: 17px;
+	display: inline-block;
+}
+
+.task-container .task-extended-info P {
+	margin-left: 20px;
+	display: block;
+}
+
+.task-container .task-extended-info P.title {
+	font-size: 1.2em;
+	padding: 1em 0;
+	color: #323232;
+}
+
+.task-container .task-info p {
+	color: #555;
+	margin: 0;
+	text-shadow: 0 0 1px #CCCCCC;
+	position: relative;
+}
+
+/* Actions */
+.task-container UL.actions {
+	float: right;
+	margin: 0;
+	padding-left: 0;
+	padding-right: 0;
+	list-style: none;
+}
+
+.task-container UL.actions LI {
+	display: inline-block;
+}
+
+.task-container UL.actions LI A {
+	color: #c5c5ca;
+	padding: 0 0.25em;
+	transition: 0.3s;
+}
+
+.task-container HEADER UL.actions {
+	margin-right: 8px;
+}
+
+.task-container HEADER UL.actions LI A {
+	padding: 0 0.5em;
+	font-size: 10px
+}
+
+.task-container .task-info UL.actions {
+	margin-right: 16px;
+	width: 120px;
+	text-align: right;
+}
+
+.task-container .task-info UL.actions LI {
+	padding-left: 0.5em;
+}
+
+.task-container .task-info UL.actions LI:first-child {
+	padding-left: 0;
+}
+
+.task-container .task-info UL.actions LI A {
+	color: #d2d2d2;
+	font-size: 15px;
+}
+
+.task-container .task-info UL.actions LI A:hover {
+	color: #888;
+}
+
+/* Task stripe */
+.task-container .task-stripe {
+	width: 3px;
+	display: inline-block;
+}
+
+/* Task icon */
+.task-container .task-info .task-icon {
+	width: 30px;
+	line-height: 30px;
+	padding: 0;
+	margin: 3px 14px;
+	border-radius: 25px;
+
+	font-size: 14px;
+	text-align: center;
+	color: white;
+}
+
+.task-container .task-info .task-icon > i {
+	margin: auto;
+	width: 20px;
+	height: 20px;
+}
+
+/* Task state */
+.task-container .task-info .state {
+	display: none;
+	text-transform: uppercase;
+	float: right;
+	width: 150px;
+	text-align: center;
+	opacity: 0.5;
+	color: #cbcbcb;
+	font-size: 12px;
+}
+
+@media (min-width: 768px) {
+	.task-container .task-info .state {
+		display: inline-block;
+	}
+}
+
+@media (min-width: 968px) {
+	.task-container .task-info .state {
+		margin-right: 75px;
+	}
+}
+
+/* **** */
+
+/* GREEN */
+.task-container .task-green .task-icon,
+.task-container .task-green .task-stripe {
+	background: #50CC8E;
+}
+
+.task-container .task-green .state {
+	color: #8bc3a7;
+}
+
+/* PURPLE */
+.task-container .task-purple .task-icon,
+.task-container .task-purple .task-stripe {
+	background: #A085D1;
+}
+
+.task-container .task-purple .state {
+	color: #b6a5d7;
+}
+
+/* YELLOW */
+.task-container .task-yellow .task-icon,
+.task-container .task-yellow .task-stripe {
+	background: #fdd136;
+}
+
+.task-container .task-yellow .state {
+	color: #d8ceac;
+}
+
+/* BLUE */
+.task-container .task-blue .task-icon,
+.task-container .task-blue .task-stripe {
+	background: #62AFE6;
+}
+
+.task-container .task-blue .state {
+	color: #9ebfd5;
+}
+
+/* GREY */
+.task-container .task-grey .task-icon,
+.task-container .task-grey .task-stripe {
+	background: #7a7a7b;
+}
+
+/* RED */
+.task-container .task-red .task-icon,
+.task-container .task-red .task-stripe {
+	background: #e15c5b;
+}
+
+.task-container .task-red .state {
+	color: #d6a6a6;
+}
+
