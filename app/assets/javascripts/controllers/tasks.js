@@ -363,8 +363,10 @@ TasksController.prototype._updateTaskActions = function ($task) {
         var taskId = $_link.closest('.task').data('task-id');
 
         // TODO: CSRF
-        var url = '/tasks/' + encodeURIComponent(taskId) + '/remove'
-        $.get(url);
+        $.ajax({
+          url: '/tasks/by_id/' + encodeURIComponent(taskId),
+          type: 'DELETE'
+        });
       });
     }
   } else if($action.length > 0) {

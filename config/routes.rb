@@ -11,16 +11,41 @@ Rails.application.routes.draw do
   post 'singularity/:secret/task',    to: 'singularity#task_webhook',    as: 'singularity_task_webhook'
   post 'singularity/:secret/deploy',  to: 'singularity#deploy_webhook',  as: 'singularity_deploy_webhook'
 
-  resources :tasks do
-    get 'watch', on: :collection
+  # Task actions
+  # constraints(task_id: /[0-9]+/) do
+  #   resources :tasks_by_id, as: :task_by_id, controller: :tasks, only: :destroy, param: :task_id
+  # end
 
-    member do
-      get 'remove'
+  # Task index and watch stream
+  scope :tasks do
+    constraints(task_id: /[0-9]+/) do
+      resources :by_id, as: :task_by_id, controller: :tasks, only: :destroy, param: :task_id
+    end
+
+    constraints(namespace: /[^\/]+/, project: /[^\/]+/, build_ref: /[^\/]+/) do
+      get 'all_groups/all_projects/all_builds/watch',
+        to: 'tasks#watch', as: 'watch_tasks'
+
+      get ':namespace/all_projects/all_builds/watch',
+        to: 'tasks#watch', as: 'watch_namespace_tasks'
+
+      get ':namespace/:project/all_builds/watch',
+        to: 'tasks#watch', as: 'watch_project_tasks'
+
+      get ':namespace/:project/:build_ref/watch',
+        to: 'tasks#watch', as: 'watch_build_tasks'
+
+      root                                  to: 'tasks#index', as: 'tasks'
+      get ':namespace',                     to: 'tasks#index', as: 'namespace_tasks'
+      get ':namespace/:project',            to: 'tasks#index', as: 'project_tasks'
+      get ':namespace/:project/:build_ref', to: 'tasks#index', as: 'build_tasks'
     end
   end
 
+  # Root -> task index
   root to: redirect('tasks')
 
+  # Projects
   resources :projects, only: :index, param: :project_id do
     get 'refresh', on: :collection
 

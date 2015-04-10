@@ -58,10 +58,10 @@ class TasksController < ApplicationController
     end
   end
 
-  def remove
+  def destroy
     # TODO: check if user can remove this task (project_id)
     # TODO: CSRF
-    if task = broker.task(params[:id].to_i)
+    if task = broker.task(params[:task_id].to_i)
       ok = false
       broker.update_task(task.id) do |task|
         if task.state != Broker::Task::STATE_DELETING
