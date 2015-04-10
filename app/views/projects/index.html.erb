@@ -1,25 +1,34 @@
-<h1>Projects</h1>
+<div class="clearfix projects">
+	<h3 class="page-title">
+		Projects
+		<span class="pull-right">
+			<a class="btn btn-new" href="<%= refresh_projects_path %>">
+				<i class="fa fa-refresh"></i>&nbsp;
+				Refresh projects
+			</a>
+		</span>
+	</h3>
 
-<%= link_to 'Refresh', refresh_projects_path, { class: 'btn btn-default' } %>
+	<p class="light">Add projects to CI by clicking on <strong><i class="fa fa-power-off"></i>&nbsp;Enable</strong>. You need to have at least <strong>Master</strong> privilege to the project to perform this action.</p>
+	<hr>
 
-<% @gitlab_projects.each do |id, project| %>
-	<div style="margin-top: 1em;">
-		<strong>
-			<% if project[:namespace] %>
-				<%= project[:namespace][:name] %>
-				/
-			<% end %>
-			<%= project[:name] %>
-		</strong>
-
-		<br><br>
-		<% if @projects[project[:id]] %>
-		<%= link_to 'Build', new_project_build_request_path(project[:id]), { class: 'btn btn-xs btn-danger' } %>
-		<% else %>
-		<%= link_to 'Enable', enable_project_path(project[:id]), { class: 'btn btn-xs btn-primary' } %>
-		<% end %>
-		<br><br>
-
-		<%= project.inspect %>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<strong>CI Enabled projects</strong> (<%= @enabled_projects.size %>)
+		</div>
+		<ul class="well-list">
+			<%= render partial: 'project', collection: @enabled_projects %>
+		</ul>
 	</div>
-<% end %>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<strong>Available projects</strong> (<%= @available_projects.size %>)
+		</div>
+
+		<ul class="well-list">
+			<%= render partial: 'project', collection: @available_projects %>
+		</ul>
+	</div>
+
+</div>
