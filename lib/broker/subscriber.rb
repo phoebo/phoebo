@@ -54,9 +54,7 @@ class Broker
           @broker.tasks.each do |_, task|
             if self.class.matching_task?(task, Hamster.hash(filter))
               if log = @broker.task_log(task.id)
-                log.reverse.each do |data|
-                  handler.call(task, data)
-                end
+                handler.call(task, log.reverse.each)
               end
             end
           end

@@ -30,7 +30,15 @@ class TasksController < ApplicationController
         end
 
         subscriber.handle :task_output do |task, data|
-          tubesock.send_data({ task.id => { log: data } }.to_json)
+          if data.is_a? Enumerable
+            data.each_with_index do |current_data, index|
+              tubesock.send_data({ task.id => { log: current_data, batch: true } }.to_json)
+            end
+
+            tubesock.send_data({ task.id => { log: nil, end_of_batch: true } }.to_json)
+          else
+            tubesock.send_data({ task.id => { log: data } }.to_json)
+          end
         end
 
         subscriber.subscribe_for :task_update

@@ -20,7 +20,7 @@ TasksController.prototype.index = function () {
       // Show the container once we received SUBSCRIBED marker
       // (all initial data has been sent)
       if(data == 'subscribed') {
-        _this.$container.fadeIn(400, function () {
+        _this.$container.fadeIn(300, function () {
           _this.loaded = true;
         });
       }
@@ -35,9 +35,13 @@ TasksController.prototype.index = function () {
         if(data[taskId]['log'] != undefined) {
           if($task.length) {
             var $infoBlock = $task.find('.task-extended-info');
+
             if($infoBlock.length && $infoBlock.data('type') == 'output') {
-              if($infoBlock.find('.placeholder'))
-                $infoBlock.find('.placeholder').remove();
+              var $logBlock = $infoBlock.find('.log');
+              if($logBlock.length == 0) {
+                $infoBlock.append($logBlock = $('<div class="log">').hide());
+                $logBlock.append('<div class="task-stripe">&nbsp;</div>');
+              }
 
               var log = data[taskId]['log'];
               log = log.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
@@ -45,9 +49,35 @@ TasksController.prototype.index = function () {
               });
 
               log = log.replace(/\[0;([0-9]+);49m(.+?)\[0m/g, '<span class="console-color-$1">$2</span>');
+              $logBlock.append($('<p>').html(log));
 
-              $infoBlock.append($('<p>').html(log));
-              $infoBlock.stop().animate({ scrollTop: $infoBlock[0].scrollHeight}, 200);
+              if(data[taskId]['batch'] != true) {
+                $logBlock.stop().animate({ scrollTop: $inner[0].scrollHeight }, 200);
+              }
+            }
+          }
+        }
+
+        // End of log batch
+        else if(data[taskId]['end_of_batch'] == true) {
+          if($task.length) {
+            var $infoBlock = $task.find('.task-extended-info');
+            var $logBlock = $infoBlock.find('.log');
+            var $preloader = $infoBlock.find('.preloader');
+
+            if($preloader.length == 0) {
+              $logBlock.stop().animate({ scrollTop: $inner[0].scrollHeight}, 200);
+            } else {
+              // Prevent sliding all the way up when preloader is hidden
+              var prev = $infoBlock.css('min-height');
+              $infoBlock.css('min-height', $preloader.height());
+
+              $preloader.hide();
+
+              $logBlock.slideDown(400, function () {
+                $logBlock.scrollTop($logBlock[0].scrollHeight);
+                $infoBlock.css('min-height', prev);
+              });
             }
           }
         }
@@ -309,8 +339,11 @@ TasksController.prototype._updateTaskActions = function ($task) {
           // Update link title
           updateLinkTitle($_link, 'Hide information');
 
-          $block.find('P').addClass('title').text('Info:');
-          $block.append($('<p />').text(JSON.stringify(_taskData)));
+          $block.find('.preloader').remove();
+          $block.append($info = $('<div />'));
+          $info.append('<div class="task-stripe">&nbsp;</div>');
+          $info.append('<p class="title">Info:</p>');
+          $info.append($('<p />').text(JSON.stringify(_taskData)));
         }, onBlockHide);
       });
     }
@@ -334,9 +367,6 @@ TasksController.prototype._updateTaskActions = function ($task) {
 
             // Update link title
             updateLinkTitle($_link, 'Hide output');
-
-            // Placeholder
-            $block.find('P').text('Waiting for data...').addClass('placeholder');
 
             // Subscribe to log channel
             payload = { 'subscribe_for_log': _taskData['id'] }
@@ -367,6 +397,8 @@ TasksController.prototype._updateTaskActions = function ($task) {
           url: '/tasks/by_id/' + encodeURIComponent(taskId),
           type: 'DELETE'
         });
+
+        return false;
       });
     }
   } else if($action.length > 0) {
@@ -376,13 +408,18 @@ TasksController.prototype._updateTaskActions = function ($task) {
 
 // Creates .task .task-extended-info element
 // If any element exist already, it is destroyed and new one is prepared
-TasksController.prototype._toggleTaskExtendedInfo = function ($task, type, onshow, onhide) {
+TasksController.prototype._toggleTaskExtendedInfo = function ($task, type, beforeshow, onhide) {
   var _this = this;
   var $block = $task.find('.task-extended-info');
 
   var show = function () {
     if($block.length) $block.remove();
-    $block = $('<div class="task-extended-info"><div class="task-stripe">&nbsp;</div><p></p></div>').addClass(type);
+
+    $preloader = $('<div class="preloader"></div>')
+    $preloader.append('<div class="task-stripe">&nbsp;</div>');
+    $preloader.append('<p>Loading ...</p>');
+
+    $block = $('<div class="task-extended-info" />').addClass(type).append($preloader);
     $block.data('type', type);
 
     if(_this.loaded)
@@ -391,14 +428,12 @@ TasksController.prototype._toggleTaskExtendedInfo = function ($task, type, onsho
     $task.append($block);
 
     if(_this.loaded) {
-      if(onshow)
-        $block.slideDown(200, function () {
-          onshow($block);
-        });
-      else
+      if(beforeshow)
+        beforeshow($block);
         $block.slideDown(200);
-    } else if(onshow) {
-      onshow($block);
+
+    } else if(beforeshow) {
+      beforeshow($block);
     }
   };
 

@@ -99,9 +99,7 @@ class Broker
       #  It is unlikely but we can have mesos id later than the output is began
       #  to be sent so we might lose first few lines.
       if log = @log_manager.log(new_task.run_id)
-        log.reverse.each do |data|
-          broadcast :task_output, new_task.id, data
-        end
+        broadcast :task_output, new_task.id, log.reverse.each
       end
 
       @run_ids_mutex.synchronize do
