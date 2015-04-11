@@ -1,4 +1,15 @@
 class SingularityController < ApplicationController
+  class Error < StandardError; end
+  class NotFoundError < Error; end
+
+  rescue_from Error do |e|
+    logger.warn "Error while processing #{action_name}: #{e.message}" + (e.is_a?(NotFoundError) ? "" : "\n#{JSON.pretty_generate(params[:singularity])}")
+
+    # Singularity sends notification even for task which are not ours,
+    # we need to process them too otherwise they will be sent back repeatedly.
+    head :ok
+  end
+
   protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
   skip_filter :check_setup
 
@@ -21,7 +32,7 @@ class SingularityController < ApplicationController
 
   def request_webhook
     task = task(request_id = params[:request][:id])
-    raise "No task found for request id: #{request_id}" unless task
+    raise NotFoundError.new("No task found for request id: #{request_id}") unless task
 
     case params[:eventType]
     when 'DELETED'
@@ -35,22 +46,16 @@ class SingularityController < ApplicationController
       end
 
     else
-      raise "Unexpected event type"
+      raise Error.new("Unexpected event type")
     end
 
-    head :ok
-
-  rescue => e
-    # Singularity sends notification even for task which are not ours,
-    # we need to process them too otherwise they will be sent back repeatedly.
-    logger.warn "Error while processing request webhook: #{e.message}\n#{JSON.pretty_generate(params[:singularity])}"
     head :ok
   end
 
   def deploy_webhook
 
     task = task(request_id = params[:deployMarker][:requestId])
-    raise "No task found for request id: #{request_id}" unless task
+    raise NotFoundError.new("No task found for request id: #{request_id}") unless task
 
     case params[:eventType]
     when 'STARTING'
@@ -58,7 +63,7 @@ class SingularityController < ApplicationController
     when 'FINISHED'
       state = Broker::Task::STATE_DEPLOYED
     else
-      raise "Unexpected event type"
+      raise Error.new("Unexpected event type")
     end
 
     broker.update_task(task.id) do |task|
@@ -68,11 +73,6 @@ class SingularityController < ApplicationController
     end
 
     head :ok
-  rescue => e
-    # Singularity sends notification even for task which are not ours,
-    # we need to process them too otherwise they will be sent back repeatedly.
-    logger.warn "Error while processing deploy webhook: #{e.message}\n#{JSON.pretty_generate(params[:singularity])}"
-    head :ok
   end
 
   def task_webhook
@@ -81,7 +81,7 @@ class SingularityController < ApplicationController
       run_id = params[:taskUpdate][:taskId][:id]
     )
 
-    raise "No task found for request id: #{request_id}, run id: #{run_id}" unless task
+    raise NotFoundError.new("No task found for request id: #{request_id}, run id: #{run_id}") unless task
 
     # Translate task state
     case params[:taskUpdate][:taskState]
@@ -100,7 +100,7 @@ class SingularityController < ApplicationController
       head :ok
       return
     else
-      raise "Unexpected task state"
+      raise Error.new("Unexpected task state")
     end
 
     broker.update_task(task.id) do |task|
@@ -132,11 +132,6 @@ class SingularityController < ApplicationController
       end
     end
 
-    head :ok
-  rescue => e
-    # Singularity sends notification even for task which are not ours,
-    # we need to process them too otherwise they will be sent back repeatedly.
-    logger.warn "Error while processing task webhook: #{e.message}\n#{JSON.pretty_generate(params[:singularity])}"
     head :ok
   end
 end
