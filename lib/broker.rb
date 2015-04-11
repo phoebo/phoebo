@@ -79,6 +79,14 @@ class Broker
       # Transformation
       transformation = task.transform(&block)
       diff           = transformation.diff
+
+      # Check for logged output
+      if diff.key?(:run_id) && !diff.key?(:has_output) && !task.has_output? && @log_manager.log(diff[:run_id])
+        transformation.has_output = true
+        diff[:has_output] = true
+      end
+
+      # Apply transformation
       new_task       = transformation.apply
 
       # Save updated task info (does nothing if nothing is changed)
@@ -94,14 +102,6 @@ class Broker
 
     # Maintain run_id <=> task_id translation table
     if diff.key?(:run_id)
-
-      # We are checking if there isn't some logged output for that mesos id.
-      #  It is unlikely but we can have mesos id later than the output is began
-      #  to be sent so we might lose first few lines.
-      if log = @log_manager.log(new_task.run_id)
-        broadcast :task_output, new_task.id, log.reverse.each
-      end
-
       @run_ids_mutex.synchronize do
         @run_ids = @run_ids.put(new_task.run_id, new_task.id)
       end
@@ -130,8 +130,16 @@ class Broker
   def log_task_output(task_run_id, output)
     @log_manager.write(task_run_id, output)
 
-    if task_id = @run_ids.get(task_run_id)
-      broadcast :task_output, task(task_id), output
+    if task_id = @run_ids.get(task_run_id) && task = task(task_id)
+      # If task doesn't have an output, it will be sent to all subscribers
+      # once the has_output flag is true, so there is no need to broadcast
+      if task.has_output?
+        broadcast :task_output, task, output
+      else
+        task = update_task(task.id) do |task|
+          task.has_output = true
+        end
+      end
     end
   end
 

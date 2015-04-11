@@ -353,9 +353,15 @@ TasksController.prototype._updateTaskActions = function ($task) {
 
   // Output -----------
   var $action = $taskActions.find('.output');
-  if(taskData['state'] != 'deleting') {
+  if(taskData['state'] != 'deleting' && taskData['has_output'] == true) {
     if($action.length == 0) {
-      $taskActions.append($('<li class="output" />').append($link = $('<a href="#" title="Show output"><i class="fa fa-terminal"></i></a>')));
+      $taskActions.append();
+      var $item = $('<li class="output" />')
+          .append($link = $('<a href="#" title="Show output"><i class="fa fa-terminal"></i></a>'));
+
+      var $before = $taskActions.find('.delete');
+      if($before.length) $item.insertBefore($before);
+      else $taskActions.append($item);
 
       $link.click(function () {
         var $_link = $(this),

@@ -103,6 +103,14 @@ class Broker
       instance_variables.collect { |var| [var[1..-1].to_sym, instance_variable_get(var)] }.to_h
     end
 
+    def has_output?
+      @has_output ? true : false
+    end
+
+    def has_output=(val)
+      @has_output = val ? true : false
+    end
+
     # --------------------------------------------------------------------------
 
     class << self

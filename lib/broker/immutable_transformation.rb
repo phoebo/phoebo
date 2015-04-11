@@ -12,8 +12,6 @@ class Broker
           next unless var[1] == '_'
           @diff[var[2..-1].to_sym] = instance_variable_get(var)
         end
-
-        freeze
       end
 
       @diff
@@ -24,11 +22,20 @@ class Broker
       if @obj.respond_to?(m)
         # Set
         if(m[-1] == '=')
-          if @obj.send(var = m[0...-1]) != args.first
-            instance_variable_set("@_#{var}", args.first)
-          elsif instance_variable_defined?(sym = "@_#{var}".to_sym)
+          unless @obj.respond_to?(method = m[0...-1])
+            unless @obj.respond_to?(method = "#{m[0...-1]}?")
+              super
+              return
+            end
+          end
+
+          if @obj.send(method) != args.first
+            instance_variable_set("@_#{m[0...-1]}", args.first)
+          elsif instance_variable_defined?(sym = "@_#{m[0...-1]}".to_sym)
             remove_instance_variable(sym)
           end
+
+          @diff = nil
 
         # Get previously set value
         elsif m[-1] != '?' && instance_variable_defined?(sym = "@_#{m}".to_sym)
