@@ -14,6 +14,10 @@ TasksController.prototype.index = function () {
   // Was initial content loaded?
   _this.loaded = false;
 
+    _this.websocket.onclose = function (event) {
+      _this._connectionClosed();
+    };
+
     _this.websocket.onmessage = function (event) {
       var data = JSON.parse(event.data);
 
@@ -426,7 +430,7 @@ TasksController.prototype._updateTaskActions = function ($task) {
         var $_link = $(this);
         var taskId = $_link.closest('.task').data('task-id');
 
-        // TODO: CSRF
+        // Note: CSRF token is added automatically into X-CSRF-Token header
         $.ajax({
           url: '/tasks/by_id/' + encodeURIComponent(taskId),
           type: 'DELETE'
@@ -491,6 +495,25 @@ TasksController.prototype._toggleTaskExtendedInfo = function ($task, type, befor
     show();
   }
 };
+
+TasksController.prototype._connectionClosed = function () {
+  this.$container.children().remove();
+
+  $closed = $('<div class="closed">').hide();
+  $closed.append('<h1 class="page-title">Disconnected</h1>')
+  $closed.append($('<div class="light" />').text('You have lost connection with server.'));
+  $closed.append('<br />');
+  $closed.append($link = $('<a href="#" class="btn btn-default">Reload</a>'));
+
+  $link.click(function () {
+    location.reload();
+    return false;
+  });
+
+  this.$container.append($closed);
+  $closed.fadeIn(400);
+};
+
 
 })(Paloma.controller('Tasks'));
 
