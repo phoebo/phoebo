@@ -13,21 +13,28 @@ class TasksController < ApplicationController
       return
     end
 
+    js_options = {}
+
     if params[:namespace]
+      js_options[:namespace_name] = @projects.values.first[:namespace][:name]
+
       if params[:project]
+        js_options[:project_name] = @projects.values.first[:name]
+
         if params[:build_ref]
-          watch_url = watch_build_tasks_path(params[:namespace], params[:project], params[:build_ref])
+          js_options[:build_name] = params[:build_ref]
+          js_options[:update_stream_url] = watch_build_tasks_path(params[:namespace], params[:project], params[:build_ref])
         else
-          watch_url = watch_project_tasks_path(params[:namespace], params[:project])
+          js_options[:update_stream_url] = watch_project_tasks_path(params[:namespace], params[:project])
         end
       else
-        watch_url = watch_namespace_tasks_path(params[:namespace])
+        js_options[:update_stream_url] = watch_namespace_tasks_path(params[:namespace])
       end
     else
-      watch_url = watch_tasks_path
+      js_options[:update_stream_url] = watch_tasks_path
     end
 
-    js update_stream_url: watch_url
+    js js_options
   end
 
   def watch

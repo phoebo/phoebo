@@ -20,6 +20,31 @@ TasksController.prototype.index = function () {
       // Show the container once we received SUBSCRIBED marker
       // (all initial data has been sent)
       if(data == 'subscribed') {
+        if(_this.$container.find('.task-container').length == 0) {
+          _this.$container.append($noTasks = $('<div class="no-tasks" />'));
+          $noTasks.append('<h1 class="page-title">No tasks</h1>')
+          $noTasks.append($msg = $('<div class="light" />'));
+
+          if(_this.params['namespace_name'])
+            $noTasks.append('<br /><a href="/tasks" class="btn btn-default">Show all tasks</a>')
+
+          if(_this.params['build_name']) {
+            $msg.text('No tasks available for project ').append($('<strong>').text(_this.params['namespace_name'] + ' / ' + _this.params['project_name'] + ' @ ' + _this.params['build_name']));
+          }
+
+          else if(_this.params['project_name']) {
+            $msg.text('No tasks available for project ').append($('<strong>').text(_this.params['namespace_name'] + ' / ' + _this.params['project_name']));
+          }
+
+          else if(_this.params['namespace_name']) {
+            $msg.text('No tasks available for projects in group ').append($('<strong>').text(_this.params['namespace_name']));
+          }
+
+          else {
+            $msg.text('No tasks are in progress.');
+          }
+        }
+
         _this.$container.fadeIn(300, function () {
           _this.loaded = true;
         });
@@ -257,6 +282,9 @@ TasksController.prototype._createBuild = function (buildId, data) {
     $panel.on('shown.bs.collapse', function () {
       $build.find('A[data-toggle="collapse"] I').attr('class', 'collapse-caret fa fa-chevron-up');
     });
+
+    // Remove no tasks message if there is any
+    this.$container.find('.no-tasks').remove();
 
     this.$container.prepend($build);
     return $build;
