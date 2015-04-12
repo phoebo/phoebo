@@ -17,5 +17,6 @@
 //= require turbolinks
 //= require paloma
 //= require_tree .
+//= require_tree ./bootstrap_plugins
 //= require_tree ./controllers
 

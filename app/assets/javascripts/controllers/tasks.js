@@ -430,10 +430,14 @@ TasksController.prototype._updateTaskActions = function ($task) {
         var $_link = $(this);
         var taskId = $_link.closest('.task').data('task-id');
 
-        // Note: CSRF token is added automatically into X-CSRF-Token header
-        $.ajax({
-          url: '/tasks/by_id/' + encodeURIComponent(taskId),
-          type: 'DELETE'
+        bootbox.confirm("Are you sure?", function (result) {
+          if(result) {
+            // Note: CSRF token is added automatically into X-CSRF-Token header
+            $.ajax({
+              url: '/tasks/by_id/' + encodeURIComponent(taskId),
+              type: 'DELETE'
+            });
+          }
         });
 
         return false;
