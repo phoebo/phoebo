@@ -20,84 +20,86 @@ class BuildRequestsController < ApplicationController
   def create_tasks
 
     tasks = []
-    params[:tasks].each do |task_params|
+    if params[:tasks]
+      params[:tasks].each do |task_params|
 
-      template = {}
+        template = {}
 
-      # Name
-      unless task_params[:name]
-        render json: { error_message: 'Missing task name.' }, status: :bad_request
-        return
-      end
-
-      # Command
-      if task_params[:command]
-        template[:command] = task_params[:command].to_s
-        task_params.delete(:command)
-      end
-
-      # Arguments
-      if task_params[:arguments]
-        if task_params[:arguments].is_a?(Array)
-          template[:arguments] = task_params[:arguments].collect { |item| item.to_s }
-        else
-          template[:arguments] = [ task_params[:arguments].to_s ]
-        end
-
-        task_params.delete(:arguments)
-      end
-
-      # Image
-      if task_params[:image]
-        template[:containerInfo] = {
-          docker: {
-            image: task_params[:image].to_s
-          }
-        }
-      else
-        render json: { error_message: "Missing image for task #{task_params[:name]}." }, status: :bad_request
-        return
-      end
-
-      # Ports
-      if task_params[:ports]
-        if task_params[:ports].is_a?(Array)
-          unless task_params[:ports].empty?
-            template[:containerInfo][:docker][:network] = 'BRIDGE'
-            template[:containerInfo][:docker][:portMappings] = task_params[:ports].collect do |port_params|
-              unless port_params.is_a?(Hash) || port_params.size != 1
-                render json: { error_message: "Invalid port definition for task #{task_params[:name]}. Use following format: [ { tcp: 1234 } ]." }, status: :bad_request
-                return
-              end
-
-              {
-                containerPortType: 'LITERAL',
-                containerPort: port_params.values.first.to_i,
-                hostPortType: 'FROM_OFFER',
-                hostPort: 0,
-                protocol: port_params.keys.first.to_s
-              }
-            end
-
-            template[:resources] ||= { }
-            template[:resources][:numPorts] = task_params[:ports].size
-          end
-        else
-          render json: { error_message: "Invalid port definition for task #{task_params[:name]}. Use following format: [ { tcp: 1234 } ]." }, status: :bad_request
+        # Name
+        unless task_params[:name]
+          render json: { error_message: 'Missing task name.' }, status: :bad_request
           return
         end
 
-        # Metadata
-        template[:metadata] = {}
-        template[:metadata][:phoebo_name] = task_params[:name].to_s
-        template[:metadata][:phoebo_project_id] = @task.project_id
-        template[:metadata][:phoebo_build_ref] = @task.build_ref
+        # Command
+        if task_params[:command]
+          template[:command] = task_params[:command].to_s
+          task_params.delete(:command)
+        end
 
-        # Brodcast new task
-        task = new_task(task_params[:service] ? true : false, template)
+        # Arguments
+        if task_params[:arguments]
+          if task_params[:arguments].is_a?(Array)
+            template[:arguments] = task_params[:arguments].collect { |item| item.to_s }
+          else
+            template[:arguments] = [ task_params[:arguments].to_s ]
+          end
 
-        # Add for processing
-        tasks << [task.id, template, task_params[:on_demand] ? false : true]
+          task_params.delete(:arguments)
+        end
+
+        # Image
+        if task_params[:image]
+          template[:containerInfo] = {
+            docker: {
+              image: task_params[:image].to_s
+            }
+          }
+        else
+          render json: { error_message: "Missing image for task #{task_params[:name]}." }, status: :bad_request
+          return
+        end
+
+        # Ports
+        if task_params[:ports]
+          if task_params[:ports].is_a?(Array)
+            unless task_params[:ports].empty?
+              template[:containerInfo][:docker][:network] = 'BRIDGE'
+              template[:containerInfo][:docker][:portMappings] = task_params[:ports].collect do |port_params|
+                unless port_params.is_a?(Hash) || port_params.size != 1
+                  render json: { error_message: "Invalid port definition for task #{task_params[:name]}. Use following format: [ { tcp: 1234 } ]." }, status: :bad_request
+                  return
+                end
+
+                {
+                  containerPortType: 'LITERAL',
+                  containerPort: port_params.values.first.to_i,
+                  hostPortType: 'FROM_OFFER',
+                  hostPort: 0,
+                  protocol: port_params.keys.first.to_s
+                }
+              end
+
+              template[:resources] ||= { }
+              template[:resources][:numPorts] = task_params[:ports].size
+            end
+          else
+            render json: { error_message: "Invalid port definition for task #{task_params[:name]}. Use following format: [ { tcp: 1234 } ]." }, status: :bad_request
+            return
+          end
+
+          # Metadata
+          template[:metadata] = {}
+          template[:metadata][:phoebo_name] = task_params[:name].to_s
+          template[:metadata][:phoebo_project_id] = @task.project_id
+          template[:metadata][:phoebo_build_ref] = @task.build_ref
+
+          # Brodcast new task
+          task = new_task(task_params[:service] ? true : false, template)
+
+          # Add for processing
+          tasks << [task.id, template, task_params[:on_demand] ? false : true]
+        end
       end
     end
 
