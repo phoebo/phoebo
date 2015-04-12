@@ -59,7 +59,8 @@ Rails.application.routes.draw do
   resources :build_requests, only: [ :show ], param: :request_secret
   post 'build_requests/:request_secret/tasks', to: 'build_requests#create_tasks' , as: 'build_request_tasks'
 
-  get 'help/invalid-config', to: 'help#invalid_config'
+  get 'help/invalid_config', to: 'help#invalid_config'
+  get 'help/no_projects', to: 'help#no_projects'
 
   get 'login', to: 'login#new', as: 'login'
   get 'login/auth', to: 'login#auth', as: 'login_auth'

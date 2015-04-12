@@ -24,6 +24,13 @@ class Broker
         raise "No handler registered for #{event.inspect}"
       end
 
+      # Prepare filter
+      filter.each do |key, value|
+        unless value.is_a?(Array)
+          filter[key] = [ value ]
+        end
+      end
+
       # Update filter
       new_filter = nil
       instance_variable_get("@#{event}_filter_mutex").synchronize do
@@ -32,8 +39,8 @@ class Broker
         filter.each do |key, value|
           new_filter = new_filter.store(key,
             new_filter.fetch(key, nil).nil? \
-              ? Hamster.vector(value) \
-              : new_filter.fetch(key).add(value)
+              ? Hamster.vector(*value) \
+              : new_filter.fetch(key) + value
           )
         end
 
@@ -126,14 +133,9 @@ class Broker
       return false unless filter
 
       filter.each do |key, values|
-        if values.is_a?(Hamster::Vector)
-          if values.rindex(task_info.send(key)).nil?
-            return false
-          end
-        else
-          unless values == task_info.send(key)
-            return false
-          end
+        # Hamster::Vector
+        if values.rindex(task_info.send(key)).nil?
+          return false
         end
       end
 

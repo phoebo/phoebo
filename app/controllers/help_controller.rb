@@ -8,4 +8,11 @@ class HelpController < ApplicationController
       render layout: 'simple'
     end
   end
+
+  def no_projects
+  	# We invalidate gitlab cache
+    if current_user && !current_user.gitlab.user_projects.empty?
+      redirect_to root_path
+    end
+  end
 end
