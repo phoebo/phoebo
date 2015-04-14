@@ -1308,3 +1308,7 @@ text.now {
 	border-width: 6px 6px 0;
 	border-top-color: #222
 }
+
+.page-title {
+	font-weight: normal;
+}

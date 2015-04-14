@@ -4,7 +4,7 @@
 		<a class="btn-sm btn btn-grouped" href="<%= new_project_build_request_path(project[:id]) %>">
 			<i class="fa fa-cogs"></i>&nbsp;Build
 		</a>
-		<a class="btn-sm btn btn-grouped" href="#">
+		<a class="btn-sm btn btn-grouped" href="<%= project_tasks_path(project[:namespace][:path], project[:path]) %>">
 			<i class="fa fa-tasks"></i>&nbsp;Tasks
 		</a>
 		<a class="btn-sm btn btn-grouped" href="#">

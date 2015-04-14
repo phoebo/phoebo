@@ -10,10 +10,13 @@
  * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
  * file per style scope.
  *
+ *= require select2
+ *= require select2-bootstrap
  *= require bootstrap.custom.css
  *= require normalize.css
  *= require font-awesome
  *= require gitlab.css
  *= require lists.css
  *= require tasks.css
+ *= require_tree ./generic
  */
