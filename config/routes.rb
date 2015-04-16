@@ -51,6 +51,7 @@ Rails.application.routes.draw do
 
     member do
       get 'enable'
+      get 'commits'
       resource :build_requests, only: [ :new ], as: :project_build_request
     end
   end

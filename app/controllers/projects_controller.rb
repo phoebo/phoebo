@@ -40,6 +40,19 @@ class ProjectsController < ApplicationController
     redirect_to action: :index
   end
 
+  def commits
+    commits = [ ]
+    gitlab.project_branches(params[:project_id]).each do |branch_info|
+      commits << {
+        id: branch_info[:commit][:id],
+        branch: branch_info[:name],
+        message: branch_info[:commit][:message]
+      }
+    end
+
+    render json: { commits: commits }
+  end
+
   def enable
     gitlab_project = gitlab.project(params[:project_id])
 

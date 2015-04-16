@@ -66,6 +66,11 @@ class GitlabConnector
     get("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}").parsed
   end
 
+  # Fetch project branches
+  def_cached :project_branches, global: true do |project_id|
+    get("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}/repository/branches").parsed
+  end
+
   # Add deploy key to project
   def add_deploy_key(project_id, name, key)
     payload = {
