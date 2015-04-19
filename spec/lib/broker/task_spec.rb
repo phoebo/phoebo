@@ -7,9 +7,52 @@ RSpec.describe Broker::Task do
     expect(build(:broker_task, :running).run_id).not_to be_nil
   end
 
-  # it do
-  #   task = described_class.new
-  #   puts task.valid_next_state?(task.class::STATE_FRESH).inspect
-  #   puts task.state
-  # end
+  describe '.valid_next_state?' do
+    it ':fresh => :requested is valid' do
+      expect(described_class.valid_next_state?(:fresh, :requested)).to be true
+    end
+
+    it ':requested => :fresh is NOT valid' do
+      expect(described_class.valid_next_state?(:requested, :fresh)).to be false
+    end
+
+    it ':fresh => :fresh is NOT valid' do
+      expect(described_class.valid_next_state?(:fresh, :fresh)).to be false
+    end
+  end
+
+  describe '.valid_prev_states' do
+    it ':fresh returns empty array' do
+      expect(described_class.valid_prev_states :fresh).to eq([])
+    end
+
+    it ':requested' do
+      expect(described_class.valid_prev_states :requested).to eq([ :fresh ])
+    end
+
+    it ':deploying' do
+      expect(described_class.valid_prev_states :deploying).to eq([ :fresh, :requested ])
+    end
+  end
+
+  describe '.transient_state?' do
+    it ':running is a transient state' do
+      expect(described_class.transient_state? :running).to be true
+    end
+
+    it ':failed is NOT a transient state' do
+      expect(described_class.transient_state? :failed).to be false
+    end
+  end
+
+  describe 'steady_state?' do
+    it ':running is NOT a steady state' do
+      expect(described_class.steady_state? :running).to be false
+    end
+
+    it ':failed is a steady state' do
+      expect(described_class.steady_state? :failed).to be true
+    end
+  end
+
 end

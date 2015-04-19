@@ -71,6 +71,10 @@ class GitlabConnector
     get("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}/repository/branches").parsed
   end
 
+  def deploy_keys(project_id)
+    get_all("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}/keys").to_h_by(:id)
+  end
+
   # Add deploy key to project
   def add_deploy_key(project_id, name, key)
     payload = {
@@ -79,6 +83,10 @@ class GitlabConnector
     }
 
     post("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}/keys", payload)
+  end
+
+  def del_deploy_key(project_id, key_id)
+    delete("#{@base_url}/projects/#{Rack::Utils.escape(project_id)}/keys/#{Rack::Utils.escape(key_id)}")
   end
 
   # ----------------------------------------------------------------------------
@@ -111,6 +119,12 @@ class GitlabConnector
   def post(url, payload, options = {})
     options.merge!({ content_type: :json, accept: :json, authorization: "Bearer #{@oauth_token}" })
     RestClient.post(url, payload.to_json, options, &method(:request_block))
+  end
+
+  # Performs HTTP DELETE request
+  def delete(url, options = {})
+    options.merge!({ content_type: :json, accept: :json, authorization: "Bearer #{@oauth_token}" })
+    RestClient.delete(url, options, &method(:request_block))
   end
 
   # Handles response

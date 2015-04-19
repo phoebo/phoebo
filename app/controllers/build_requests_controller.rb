@@ -4,13 +4,13 @@ class BuildRequestsController < ApplicationController
   before_filter :authenticate_user!, except: [ :show, :create_tasks ]
 
   def show
-    project = Project.find(@task.project_id)
+    project_set = ProjectSet.for_project(@task.project_id)
+
     payload = {
       id: @task.id,
-      repo_url: "ssh://" + project.repo_url.gsub(/:/, '/').gsub(/^[^@]+@/, ''),
       ssh_user: 'git',
-      ssh_public: project.public_key,
-      ssh_private: project.private_key,
+      ssh_public: project_set.settings.public_key,
+      ssh_private: project_set.settings.private_key,
       ping_url: build_request_tasks_url(@task.build_secret, Rails.configuration.x.url)
     }
 
@@ -114,15 +114,23 @@ class BuildRequestsController < ApplicationController
 
   def new
     @project_select = []
-    Project.find_owned_by(current_user).each do |project|
-      @project_select << [ project.name, project.id ]
+    ProjectInfo.all_enabled(for_user: current_user).each do |project_info|
+      @project_select << [ project_info.display_name, project_info.id ]
     end
   end
 
   def create
-    # TODO: check if project exists
-    project_id   = params[:build_request][:project_id].to_i
-    project_info = gitlab.cached_project(project_id)
+    project_info = ProjectInfo.find(
+      params[:build_request][:project_id].to_i,
+      for_user: current_user
+    )
+
+    unless project_info
+      head :not_found
+      return
+    end
+
+    repo_url = "ssh://" + project_info.repo_url.gsub(/:/, '/').gsub(/^[^@]+@/, '')
 
     # Request URL
     build_secret = SecureRandom.hex
@@ -144,7 +152,7 @@ class BuildRequestsController < ApplicationController
 
     # For DIND:
     # template = {
-    #   arguments: [ 'phoebo', '--from-url', url ],
+    #   arguments: [ 'phoebo', '--from-url', url, '--repo-url', repo_url ],
     #   containerInfo: {
     #     docker: {
     #       image: 'phoebo/phoebo:latest',
@@ -155,7 +163,7 @@ class BuildRequestsController < ApplicationController
 
     # For shared docker with the host:
     template = {
-      arguments: [ 'phoebo', '--from-url', url ],
+      arguments: [ 'phoebo', '--from-url', url, '--repository', repo_url ],
       env: {
         :NO_DIND => 1,
         :DOCKER_URL => 'unix:///tmp/docker.sock'
@@ -173,8 +181,8 @@ class BuildRequestsController < ApplicationController
     # Append metadata
     template[:metadata]                       ||= {}
     template[:metadata][:phoebo_name]         ||= 'Image Builder'
-    template[:metadata][:phoebo_project_id]   ||= project_id
-    template[:metadata][:phoebo_build_ref]    ||= project_info[:default_branch]
+    template[:metadata][:phoebo_project_id]   ||= project_info.id
+    template[:metadata][:phoebo_build_ref]    ||= params[:build_request][:branch]
     template[:metadata][:phoebo_build_secret] ||= build_secret
 
     # Brodcast new task

@@ -137,7 +137,7 @@ class Broker
       def valid_prev_states(state)
         normalized_state = normalize_state(state)
         prev = STATES.select do |_, v|
-          normalize_state(v) < normalized_state
+          normalize_state(v) < normalized_state && v < ERROR_STATE_THRESHOLD
         end
 
         prev.keys

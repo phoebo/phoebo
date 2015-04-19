@@ -1,33 +1,33 @@
 <li class="project">
-	<div class="pull-right">
-		<% if project[:enabled] %>
-		<a class="btn-sm btn btn-grouped" href="<%= new_project_build_request_path(project[:id]) %>">
-			<i class="fa fa-cogs"></i>&nbsp;Build
-		</a>
-		<a class="btn-sm btn btn-grouped" href="<%= project_tasks_path(project[:namespace][:path], project[:path]) %>">
-			<i class="fa fa-tasks"></i>&nbsp;Tasks
-		</a>
-		<a class="btn-sm btn btn-grouped" href="#">
-			<i class="fa fa-edit"></i>&nbsp;Settings
-		</a>
-		<a class="btn-sm btn btn-grouped btn-danger" href="#">
-			<i class="fa fa-power-off"></i>&nbsp;Disable
-		</a>
-		<% else %>
-		<a class="btn-sm btn btn-grouped btn-new" href="<%= enable_project_path(project[:id]) %>">
-			<i class="fa fa-power-off"></i>&nbsp;Enable
-		</a>
-		<% end %>
-		<br><br>
-	</div>
+  <div class="pull-right">
+    <% if project.enabled? %>
+    <a class="btn-sm btn btn-grouped" href="<%= new_project_build_request_path(project.id) %>">
+      <i class="fa fa-cogs"></i>&nbsp;Build
+    </a>
+    <a class="btn-sm btn btn-grouped" href="<%= project_tasks_path(project.namespace.path, project.path) %>">
+      <i class="fa fa-tasks"></i>&nbsp;Tasks
+    </a>
+    <a class="btn-sm btn btn-grouped" href="<%= project_settings_path(project.namespace.path, project.path) %>">
+      <i class="fa fa-edit"></i>&nbsp;Settings
+    </a>
+    <a class="btn-sm btn btn-grouped btn-danger btn-disable" href="<%= disable_project_path(project.id) %>">
+      <i class="fa fa-power-off"></i>&nbsp;Disable
+    </a>
+    <% else %>
+    <a class="btn-sm btn btn-grouped btn-new btn-enable" href="<%= enable_project_path(project.id) %>">
+      <i class="fa fa-power-off"></i>&nbsp;Enable
+    </a>
+    <% end %>
+    <br><br>
+  </div>
 
-	<a class="group-name" href="/groups/zatop-si">
-		<strong>
-			<% if project[:namespace] %>
-				<%= project[:namespace][:name] %>
-				/
-			<% end %>
-			<%= project[:name] %>
-		</strong>
-	</a>
+  <a class="group-name" href="/groups/zatop-si">
+    <strong>
+      <% if project.namespace %>
+        <%= project.namespace.name %>
+        /
+      <% end %>
+      <%= project.name %>
+    </strong>
+  </a>
 </li>

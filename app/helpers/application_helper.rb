@@ -31,4 +31,8 @@ module ApplicationHelper
     args.any? { |v| v.to_s.downcase == action_name }
   end
 
+  def current_user_admin?
+    current_user.is_admin
+  end
+
 end

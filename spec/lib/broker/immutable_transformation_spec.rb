@@ -7,6 +7,6 @@ RSpec.describe Broker::ImmutableTransformation do
 
 	it 'creates diff' do
 		transformation.has_output = true
-		expect(transformation.diff).to be == {has_output: true}
+		expect(transformation.diff).to be == { has_output: true }
 	end
 end

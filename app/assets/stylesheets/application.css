@@ -16,6 +16,6 @@
  *= require font-awesome
  *= require gitlab.css
  *= require lists.css
- *= require tasks.css
  *= require_tree ./generic
+ *= require_tree ./controllers
  */

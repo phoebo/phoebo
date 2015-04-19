@@ -1,34 +1,42 @@
 <div class="clearfix projects">
-	<h3 class="page-title">
-		Projects
-		<span class="pull-right">
-			<a class="btn btn-new" href="<%= refresh_projects_path %>">
-				<i class="fa fa-refresh"></i>&nbsp;
-				Refresh projects
-			</a>
-		</span>
-	</h3>
+  <h3 class="page-title">
+    Projects
+    <span class="pull-right">
+      <a class="btn btn-new" href="<%= refresh_projects_path %>">
+        <i class="fa fa-refresh"></i>&nbsp;
+        Refresh projects
+      </a>
+    </span>
+  </h3>
 
-	<p class="light">Add projects to CI by clicking on <strong><i class="fa fa-power-off"></i>&nbsp;Enable</strong>. You need to have at least <strong>Master</strong> privilege to the project to perform this action.</p>
-	<hr>
+  <p class="light">Add projects to CI by clicking on <strong><i class="fa fa-power-off"></i>&nbsp;Enable</strong>. You need to have at least <strong>Master</strong> privilege to the project to perform this action.</p>
+  <hr>
 
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<strong>CI Enabled projects</strong> (<%= @enabled_projects.size %>)
-		</div>
-		<ul class="well-list">
-			<%= render partial: 'project', collection: @enabled_projects %>
-		</ul>
-	</div>
+  <% flash.each do |name, msg| %>
+  <div class="alert alert-<%= name %>">
+    <p><%= msg %></p>
+  </div>
+  <% end %>
 
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<strong>Available projects</strong> (<%= @available_projects.size %>)
-		</div>
+  <% unless @enabled_projects.empty? %>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <strong>CI Enabled projects</strong> (<%= @enabled_projects.size %>)
+    </div>
+    <ul class="well-list">
+      <%= render partial: 'project', collection: @enabled_projects %>
+    </ul>
+  </div>
+  <% end %>
 
-		<ul class="well-list">
-			<%= render partial: 'project', collection: @available_projects %>
-		</ul>
-	</div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <strong>Available projects</strong> (<%= @available_projects.size %>)
+    </div>
+
+    <ul class="well-list">
+      <%= render partial: 'project', collection: @available_projects %>
+    </ul>
+  </div>
 
 </div>

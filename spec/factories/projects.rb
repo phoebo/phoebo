@@ -1,11 +1,16 @@
 FactoryGirl.define do
-  factory :project do
-    name 'My Project #1'
-    path 'my-project-1'
-    namespace_name 'Private Projects'
-    namespace_path 'private'
-    url 'http://gitlab.example.com/private/my-project-1'
-    repo_url 'git@gitlab.example.com:private/my-project-1.git'
+  factory :project_set do
+    trait :for_project do
+        transient do
+            project_id 0
+        end
+
+        kind ProjectSet.kinds[:with_project_id]
+        filter_pattern { "#{project_id}" }
+    end
+  end
+
+  factory :project_settings do
     public_key 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEvUKbIyAdN5adpI9b3qgoACB5AVAAJ+EptqFxoqiYSKmqxV8LZZNfBR3w9Rm1aR9/Van/2icQy8jxcS3kHJRw/qtBM9NBga2jy6QGg33wdxCQXQmtYULmRYtLP1+o9shRxUDmOt11s6Xs3vKBNJ8wTe4vht3YOaMvJxNJs9khXZiyYIOoMPCxfbbpiyv+xWzNR6H0SeFF1o5XsPYofDakF283NmgEP6CrR9sd0ji2ngpg39/kRR+dzZdWS+3n4Ma/nZJaRLQBs90zkGiXMYClz7AZb4Nz7RvfvgXFOwPbfOdBPFwYFou4NOkTrVDl4OylNwOtZF7/QUDq6u/NelfF user@domain.tld'
     private_key '-----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEAxL1CmyMgHTeWnaSPW96oKAAgeQFQACfhKbahcaKomEipqsVf

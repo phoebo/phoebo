@@ -11,10 +11,18 @@ Rails.application.routes.draw do
   post 'singularity/:secret/task',    to: 'singularity#task_webhook',    as: 'singularity_task_webhook'
   post 'singularity/:secret/deploy',  to: 'singularity#deploy_webhook',  as: 'singularity_deploy_webhook'
 
-  # Task actions
-  # constraints(task_id: /[0-9]+/) do
-  #   resources :tasks_by_id, as: :task_by_id, controller: :tasks, only: :destroy, param: :task_id
-  # end
+  # Project settings
+  scope :project_settings do
+    root to: 'project_settings#show', as: 'projects_settings'
+    post '/', to: 'project_settings#update'
+
+    constraints(namespace: /[^\/]+/, project: /[^\/]+/) do
+      get  ':namespace',          to: 'project_settings#show',   as: 'namespace_settings'
+      post ':namespace',          to: 'project_settings#update'
+      get  ':namespace/:project', to: 'project_settings#show',   as: 'project_settings'
+      post ':namespace/:project', to: 'project_settings#update'
+    end
+  end
 
   # Task index and watch stream
   scope :tasks do
@@ -51,6 +59,7 @@ Rails.application.routes.draw do
 
     member do
       get 'enable'
+      get 'disable'
       get 'commits'
       resource :build_requests, only: [ :new ], as: :project_build_request
     end

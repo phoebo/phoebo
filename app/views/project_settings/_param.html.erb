@@ -1,0 +1,52 @@
+<div class="param<%= params_form ? '' : ' param-empty' %>">
+  <div class="form-group">
+    <label class="sr-only">Name of parameter</label>
+    <% if params_form %>
+      <%= params_form.text_field :name, class: 'form-control', placeholder: 'Name' %>
+    <% else %>
+      <input type="text" name="project_set[params_attributes][<%= index %>][name]" class="form-control" placeholder="Name">
+    <% end %>
+  </div>
+
+  <div class="form-group form-group-static">
+    <p class="form-control-static form-control-sep">=</p>
+  </div>
+
+  <div class="form-group">
+    <label class="sr-only">Value of parameter</label>
+    <div class="input-group">
+      <div class="input-group-btn">
+        <button class="btn dropdown-toggle" data-toggle="dropdown">
+          <span class="caret"></span>&nbsp;
+          <span class="current"><%= params_form && params_form.object.secret? ? 'secret' : 'plain' %></span>:
+        </button>
+        <ul class="dropdown-menu pull-right">
+          <li><a href="#" data-type="text">plain</a></li>
+          <li><a href="#" data-type="password">secret</a></li>
+        </ul>
+      </div><!-- / .input-group-btn -->
+
+      <% if params_form %>
+        <% if params_form.object.secret? %>
+          <%= params_form.password_field :value, class: 'form-control', placeholder: 'Value', value: '*' * params_form.object.value.length %>
+        <% else %>
+          <%= params_form.text_field :value, class: 'form-control', placeholder: 'Value' %>
+        <% end %>
+      <% else %>
+        <input type="text" name="project_set[params_attributes][<%= index %>][value]" class="form-control" placeholder="Value">
+      <% end %>
+    </div>
+  </div>
+
+  <!-- <div class="form-group form-group-static">
+    <p class="form-control-static form-control-inherited">(inherited)</p>
+  </div> -->
+
+  <% if params_form %>
+    <%= params_form.hidden_field :secret? %>
+    <%= params_form.hidden_field :_destroy, value: false %>
+  <% else %>
+    <input type="hidden" name="project_set[params_attributes][<%= index %>][secret]" value="false">
+    <input type="hidden" name="project_set[params_attributes][<%= index %>][_destroy]" value="false">
+  <% end %>
+</div><!-- / .param -->

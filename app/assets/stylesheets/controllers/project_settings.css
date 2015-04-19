@@ -1,0 +1,33 @@
+.project-settings .form-group-static {
+	margin-left: 0;
+	margin-right: 0;
+}
+
+.project-settings .form-control-sep {
+	padding: 0 2em;
+}
+
+.project-settings .form-control-inherited {
+	padding-left: 2.5em;
+	color: #999;
+	font-size: 0.8em;
+	font-style: italic;
+	line-height: 1.25em;
+}
+
+.params-container {
+	padding-left: 15px;
+}
+.params-container .param {
+	margin-top: 15px;
+}
+
+.params-container .param:first-child {
+	margin-top: 0px;
+}
+
+.params-container .param .dropdown-toggle .current {
+	display: inline-block;
+	text-align: right;
+	width: 40px;
+}

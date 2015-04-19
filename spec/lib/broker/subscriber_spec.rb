@@ -42,9 +42,9 @@ RSpec.describe Broker::Subscriber do
       subscriber.subscribe_for(:task_output, id: task.id)
 
       # Initial state
-      expect(handler_args).to be == [ task, "Some outputted data" ]
+      expect(handler_args[0]).to be == task
+      expect(handler_args[1]).to be_a(Enumerator)
       handler_args = nil
-
 
       subscriber.process(:task_output, task, 'Some other data')
 
@@ -56,7 +56,7 @@ RSpec.describe Broker::Subscriber do
       subscriber.handle(:task_output) { |*args| nil }
 
       f1 = subscriber.subscribe_for(:task_output, id: task.id)
-      expect(f1).to be == Hamster::hash(id: Hamster::vector(3))
+      expect(f1).to be == Hamster::hash(id: Hamster::vector(task.id))
 
       f2 = subscriber.unsubscribe_from(:task_output, id: task.id)
       expect(f2).to be_nil

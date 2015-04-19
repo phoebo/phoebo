@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150402152731) do
+ActiveRecord::Schema.define(version: 20150418221939) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,30 @@ ActiveRecord::Schema.define(version: 20150402152731) do
     t.string  "secret",     null: false
     t.string  "ref",        null: false
   end
+
+  create_table "project_parameters", force: :cascade do |t|
+    t.integer "project_set_id"
+    t.text    "name",                       null: false
+    t.text    "value"
+    t.integer "flag",           default: 0, null: false
+  end
+
+  add_index "project_parameters", ["project_set_id"], name: "index_project_parameters_on_project_set_id", using: :btree
+
+  create_table "project_sets", force: :cascade do |t|
+    t.integer "kind",           default: 0, null: false
+    t.string  "filter_pattern"
+  end
+
+  create_table "project_settings", force: :cascade do |t|
+    t.integer "project_set_id"
+    t.integer "memory"
+    t.float   "cpu"
+    t.text    "public_key"
+    t.text    "private_key"
+  end
+
+  add_index "project_settings", ["project_set_id"], name: "index_project_settings_on_project_set_id", using: :btree
 
   create_table "projects", force: :cascade do |t|
     t.string "name",           null: false

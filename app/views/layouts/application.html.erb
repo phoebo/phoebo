@@ -13,6 +13,12 @@
         "Projects"><i class='fa fa-briefcase'></i> <span>Projects</span></a>
       </li>
 
+      <% if current_user_admin? %>
+      <li class="<%= current_controller?(:project_settings) ? 'active' : '' %>">
+        <a href="<%= projects_settings_path %>" title="Settings"><i class="fa fa-gear"></i> <span>Settings</span></a>
+      </li>
+      <% end %>
+
       <!-- <li>
         <a href="#" title="Groups"><i class=
         'fa fa-gear'></i> <span>Settings</span></a>

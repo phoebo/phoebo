@@ -8,6 +8,7 @@ RSpec.shared_context 'redis' do
   end
 
   # Ensure Redis mock is performed even if we forget to explicitly define it's expectations
+  # This is mainly so that we don't touch the real DB by mistake
   before do
     redis
   end

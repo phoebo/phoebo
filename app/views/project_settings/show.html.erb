@@ -1,0 +1,61 @@
+<div class="clearfix project-settings">
+  <% console %>
+  <% if @project %>
+    <h3 class="page-title">Project settings for <%= @project.display_name %></h3>
+  <% else %>
+    <h3 class="page-title">Default project settings</h3>
+    <p class="light">These settings will be inherited as defaults for each project.</p>
+  <% end %>
+  <hr>
+  <div class="panel-body">
+    <%= form_for @project_set, url: @url, html: { method: 'post' } do |f| %>
+
+      <% flash.each do |name, msg| %>
+      <div class="alert alert-<%= name %>">
+        <p><%= msg %></p>
+      </div>
+      <% end %>
+
+      <% @project_set.errors.full_messages.each do |msg| %>
+      <div class="alert alert-danger">
+        <p><%= msg %></p>
+      </div>
+      <% end %>
+
+      <fieldset class="form-horizontal">
+        <%= f.fields_for :settings do |settings_form| %>
+          <div class="form-group">
+            <%= settings_form.label :cpu, 'CPUs', class: 'control-label' %>
+            <div class="col-sm-10">
+              <%= settings_form.text_field :cpu, class: 'form-control' %>
+            </div>
+          </div>
+
+          <div class="form-group">
+          <%= settings_form.label :memory, 'Memory (MB)', class: 'control-label' %>
+            <div class="col-sm-10">
+              <%= settings_form.text_field :memory, class: 'form-control' %>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="form-group">
+          <label class="control-label">Parameters</label>
+          <div class="col-sm-10 form-inline">
+            <div class="params-container">
+              <%= f.fields_for :params do |params_form| %>
+                <%= render partial: 'param', locals: { params_form: params_form } %>
+              <% end %>
+
+              <%= render partial: 'param', locals: { params_form: nil, index: f.object.params.count } %>
+            </div><!-- / .params-container-->
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <%= submit_tag 'Save', class: 'btn btn-save' %>
+      </div>
+    <% end %>
+  </div>
+</div>
