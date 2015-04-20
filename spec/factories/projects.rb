@@ -10,6 +10,16 @@ FactoryGirl.define do
     end
   end
 
+  factory :project_info do
+    initialize_with do
+      gitlab_project = build(:gitlab_project)
+      new(
+        gitlab_project,
+        build(:project_set, :for_project, project_id: gitlab_project[:id])
+      )
+    end
+  end
+
   factory :project_settings do
     public_key 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEvUKbIyAdN5adpI9b3qgoACB5AVAAJ+EptqFxoqiYSKmqxV8LZZNfBR3w9Rm1aR9/Van/2icQy8jxcS3kHJRw/qtBM9NBga2jy6QGg33wdxCQXQmtYULmRYtLP1+o9shRxUDmOt11s6Xs3vKBNJ8wTe4vht3YOaMvJxNJs9khXZiyYIOoMPCxfbbpiyv+xWzNR6H0SeFF1o5XsPYofDakF283NmgEP6CrR9sd0ji2ngpg39/kRR+dzZdWS+3n4Ma/nZJaRLQBs90zkGiXMYClz7AZb4Nz7RvfvgXFOwPbfOdBPFwYFou4NOkTrVDl4OylNwOtZF7/QUDq6u/NelfF user@domain.tld'
     private_key '-----BEGIN RSA PRIVATE KEY-----
