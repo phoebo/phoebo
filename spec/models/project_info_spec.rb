@@ -15,7 +15,7 @@ RSpec.describe ProjectInfo do
     it 'returns collection with ProjectInfo' do
       # Enable one project
       enabled_project_id = gitlab.user_projects.values.first[:id]
-      project_set = create(:project_set, :for_project, project_id: enabled_project_id)
+      create(:project_binding, :for_project, project_id: enabled_project_id)
 
       projects = described_class.all(for_user: user)
 

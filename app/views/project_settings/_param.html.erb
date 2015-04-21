@@ -4,7 +4,7 @@
     <% if params_form %>
       <%= params_form.text_field :name, class: 'form-control', placeholder: 'Name' %>
     <% else %>
-      <input type="text" name="project_set[params_attributes][<%= index %>][name]" class="form-control" placeholder="Name">
+      <input type="text" name="project_binding[params_attributes][<%= index %>][name]" class="form-control" placeholder="Name">
     <% end %>
   </div>
 
@@ -33,20 +33,16 @@
           <%= params_form.text_field :value, class: 'form-control', placeholder: 'Value' %>
         <% end %>
       <% else %>
-        <input type="text" name="project_set[params_attributes][<%= index %>][value]" class="form-control" placeholder="Value">
+        <input type="text" name="project_binding[params_attributes][<%= index %>][value]" class="form-control" placeholder="Value">
       <% end %>
     </div>
   </div>
-
-  <!-- <div class="form-group form-group-static">
-    <p class="form-control-static form-control-inherited">(inherited)</p>
-  </div> -->
 
   <% if params_form %>
     <%= params_form.hidden_field :secret? %>
     <%= params_form.hidden_field :_destroy, value: false %>
   <% else %>
-    <input type="hidden" name="project_set[params_attributes][<%= index %>][secret]" value="false">
-    <input type="hidden" name="project_set[params_attributes][<%= index %>][_destroy]" value="false">
+    <input type="hidden" name="project_binding[params_attributes][<%= index %>][secret]" value="false">
+    <input type="hidden" name="project_binding[params_attributes][<%= index %>][_destroy]" value="false">
   <% end %>
 </div><!-- / .param -->

@@ -4,36 +4,43 @@ class ProjectSettingsController < ApplicationController
 
   def show
     # Nested form is skipped otherwise
-    @project_set.settings = ProjectSettings.new unless @project_set.settings
+    @project_binding.settings = ProjectSettings.new unless @project_binding.settings
   end
 
   def update
-    update_params = project_set_params
+    update_params = project_binding_params
+
+    # Sanitize settings
+    if update_params[:settings_attributes][:id]
+      if !@project_binding.settings || update_params[:settings_attributes][:id] != "#{@project_binding.settings.id}"
+        update_params[:settings_attributes].delete(:id)
+      end
+    end
 
     # Sanitize params
-    allowed_param_ids = @project_set.params.pluck(:id)
+    allowed_param_ids = @project_binding.params.pluck(:id)
     update_params[:params_attributes].select! do |_, params_attributes|
       ret = true
 
       # Skip empty keys
       ret = false if params_attributes[:name].blank?
 
-      # Cross-check @project_set param ids
+      # Cross-check @project_binding param ids
       if params_attributes[:id]
         ret = false unless allowed_param_ids.include?(params_attributes[:id].to_i)
       end
 
       # Skip secret params with no value (****)
       if params_attributes[:secret] == 'true'
-        ret = false unless params_attributes[:value].match(/[^\*]/)
+        params_attributes.delete(:value) unless params_attributes[:value].match(/[^\*]/)
       end
 
       ret
     end
 
-    @project_set.update(update_params)
+    @project_binding.update_attributes(update_params)
 
-    if @project_set.valid?
+    if @project_binding.valid?
       flash[:success] = 'Settings has been updated.'
       redirect_to @url
     else
@@ -54,7 +61,8 @@ class ProjectSettingsController < ApplicationController
 
       if @project
         @url = project_settings_path(params[:namespace], params[:project])
-        @project_set = @project.project_set
+        @project_binding = @project.bindings[:project]
+        @parent_accessor = @project.bindings.parent
       else
         head :not_found and return
       end
@@ -62,30 +70,26 @@ class ProjectSettingsController < ApplicationController
     when params[:namespace]
       # TODO: Not implemented yet
       head :not_found and return
-
       # @url = namespace_settings_path(params[:namespace])
-      # @project_set = ProjectSet.find_or_initialize_by(
-      #   kind: ProjectSet.kinds[:with_namespace_id],
-      #   filter_pattern: 123
-      # )
     else
       unless current_user.is_admin
         head :forbidden and return
       end
 
+      accessor = ProjectAccessor.new
+
       @url = projects_settings_path
-      @project_set = ProjectSet.find_or_initialize_by(
-        kind: ProjectSet.kinds[:all_projects]
-      )
+      @project_binding = accessor[:default]
+      @parent_accessor = accessor.parent
     end
   end
 
-  def project_set_params
+  def project_binding_params
     permitted = {}
 
     # Settings
     permitted[:settings_attributes] = [
-      :cpu, :memory
+      :id, :cpu, :memory
     ]
 
     # Basic params attributes
@@ -94,12 +98,12 @@ class ProjectSettingsController < ApplicationController
     ]
 
     # Params attribtes for update
-    if @project_set.persisted?
+    if @project_binding.persisted?
       permitted[:params_attributes] += [
         :id, :_destroy
       ]
     end
 
-    params.require(:project_set).permit(permitted)
+    params.require(:project_binding).permit(permitted)
   end
 end

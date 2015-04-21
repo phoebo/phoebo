@@ -4,14 +4,13 @@ class BuildRequestsController < ApplicationController
   before_filter :authenticate_user!, except: [ :show, :create_tasks ]
 
   def show
-    project_set = ProjectSet.for_project(@task.project_id)
-
     payload = {
       id: @task.id,
       ssh_user: 'git',
-      ssh_public: project_set.settings.public_key,
-      ssh_private: project_set.settings.private_key,
-      ping_url: build_request_tasks_url(@task.build_secret, Rails.configuration.x.url)
+      ssh_public: @project_bindings.settings(:public_key),
+      ssh_private: @project_bindings.settings(:private_key),
+      ping_url: build_request_tasks_url(@task.build_secret, Rails.configuration.x.url),
+      params: @project_bindings.effective_params
     }
 
     render json: payload
@@ -87,6 +86,11 @@ class BuildRequestsController < ApplicationController
             render json: { error_message: "Invalid port definition for task #{task_params[:name]}. Use following format: [ { tcp: 1234 } ]." }, status: :bad_request
             return
           end
+
+          # Resources
+          template[:resources] ||= { }
+          template[:resources][:cpus] = @project_bindings.settings(:cpu)
+          template[:resources][:memoryMb] = @project_bindings.settings(:memory)
 
           # Metadata
           template[:metadata] = {}
@@ -242,6 +246,10 @@ class BuildRequestsController < ApplicationController
       head :not_found
       return
     end
+
+    # TODO: we need to get namespace_id
+    #  (we can't just use ProjectInfo, because we are without gitlab context)
+    @project_bindings = ProjectAccessor.new(@task.project_id)
   end
 
 end

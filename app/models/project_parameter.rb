@@ -1,6 +1,11 @@
 # Project parameter
+#
+# t.text :name, null: false
+# t.text :value
+# t.integer :flag, null: false, default: 0
+#
 class ProjectParameter < ActiveRecord::Base
-  belongs_to :project_set
+  belongs_to :project_binding
 
   FLAG_SECRET = 0x01
 

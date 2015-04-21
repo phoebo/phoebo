@@ -11,7 +11,7 @@ RSpec.describe BuildRequestsController, type: :controller do
   context 'existing task' do
     let(:project_info) do
       project_info = build(:project_info)
-      project_info.project_set.settings = build(:project_settings)
+      project_info.bindings[:project].settings = build(:project_settings)
 
       project_info
     end
@@ -26,8 +26,6 @@ RSpec.describe BuildRequestsController, type: :controller do
 
     describe 'GET #show' do
       it do
-        allow(ProjectSet).to receive(:for_project).with(task.project_id).and_return(project_info.project_set)
-
         get :show, request_secret: task.build_secret
         expect(response).to have_http_status(:ok)
       end

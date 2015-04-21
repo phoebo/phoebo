@@ -1,22 +1,26 @@
-# Combined info of GitLab project with our project settings
+# Combined info of GitLab project with our project binding
 class ProjectInfo
   attr_reader :id, :path, :name
   attr_reader :default_branch, :repo_url
-  attr_reader :project_set, :namespace
+  attr_reader :namespace
 
-  def initialize(gitlab_project, project_set)
+  def initialize(gitlab_project, project_binding = nil)
     @id             = gitlab_project[:id]
     @path           = gitlab_project[:path]
     @name           = gitlab_project[:name]
     @repo_url       = gitlab_project[:ssh_url_to_repo]
     @default_branch = gitlab_project[:default_branch]
+    @enabled        = project_binding ? true : nil
 
     @namespace      = ProjectNamespaceInfo.new(gitlab_project[:namespace])
-    @project_set    = project_set
   end
 
   def enabled?
-    !!@project_set
+    if @enabled.nil?
+      @enabled = bindings[:project].persisted?
+    end
+
+    @enabled
   end
 
   def display_name
@@ -27,6 +31,10 @@ class ProjectInfo
     n.join(' / ')
   end
 
+  def bindings
+    @bindings ||= ProjectAccessor.new(namespace.id, id)
+  end
+
   class << self
     # Returns collection of all users projects
     def all(options)
@@ -34,16 +42,16 @@ class ProjectInfo
       gitlab_projects = gitlab.cached_user_projects
       user_project_ids = gitlab_projects.keys
 
-      matching_sets = ProjectSet.where(
-        kind: ProjectSet.kinds[:with_project_id],
-        filter_pattern: user_project_ids
-      ).index_by(&:filter_pattern)
+      matching_sets = ProjectBinding.where(
+        kind: ProjectBinding.kinds[:project_id],
+        value: user_project_ids
+      ).index_by(&:value)
 
       projects = []
       gitlab_projects.each do |_, gitlab_project|
         projects << self.new(
           gitlab_project,
-          matching_sets["#{gitlab_project[:id]}"]
+          matching_sets[gitlab_project[:id]]
         )
       end
 
@@ -67,10 +75,7 @@ class ProjectInfo
 
       return nil unless gitlab_project
 
-      self.new(
-        gitlab_project,
-        ProjectSet.for_project(gitlab_project[:id], init: !!options[:project_set_init])
-      )
+      self.new(gitlab_project)
     end
 
     # Finds project by it's path (namespace / project)
@@ -87,10 +92,7 @@ class ProjectInfo
       return nil if matching_projects.empty?
       gitlab_project = matching_projects.values.first
 
-      self.new(
-        gitlab_project,
-        ProjectSet.for_project(gitlab_project[:id], init: !!options[:project_set_init])
-      )
+      self.new(gitlab_project)
     end
   end
 end

@@ -48,8 +48,7 @@ class ProjectsController < ApplicationController
   def enable
     project_info = ProjectInfo.find(
       params[:project_id],
-      for_user: current_user,
-      project_set_init: true
+      for_user: current_user
     )
 
     unless project_info
@@ -57,21 +56,21 @@ class ProjectsController < ApplicationController
       return
     end
 
-    project_set = project_info.project_set
-    project_set.settings ||= ProjectSettings.new
+    project_binding = project_info.bindings[:project]
+    project_binding.settings ||= ProjectSettings.new
 
-    unless project_set.settings.public_key
+    unless project_binding.settings.public_key
       # Generate new 2048 bit RSA key
       # Note: must have comment otherwise it doesn't get read by some clients
       k = SSHKey.generate(comment: 'user@domain.tld')
-      project_set.settings.public_key = k.ssh_public_key
-      project_set.settings.private_key = k.private_key
-      project_set.save
+      project_binding.settings.public_key = k.ssh_public_key
+      project_binding.settings.private_key = k.private_key
+      project_binding.save
 
       gitlab.add_deploy_key(
         project_info.id,
         'Phoebo CI',
-        project_set.settings.public_key
+        project_binding.settings.public_key
       )
     end
 
@@ -85,12 +84,12 @@ class ProjectsController < ApplicationController
       for_user: current_user
     )
 
-    unless project_info && project_info.project_set
+    unless project_info && project_info.bindings[:project].persisted?
       head :not_found
       return
     end
 
-    settings = project_info.project_set.settings
+    settings = project_info.bindings[:project].settings
     if settings.public_key
       matching_keys = gitlab.deploy_keys(project_info.id).select do |_, key|
         key[:key] == settings.public_key
@@ -101,7 +100,7 @@ class ProjectsController < ApplicationController
       end
     end
 
-    project_info.project_set.destroy
+    project_info.bindings[:project].destroy
 
     flash[:success] = "CI disabled for project #{project_info.display_name}."
     redirect_to action: :index

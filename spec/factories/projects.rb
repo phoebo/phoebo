@@ -1,12 +1,12 @@
 FactoryGirl.define do
-  factory :project_set do
+  factory :project_binding do
     trait :for_project do
       transient do
         project_id 0
       end
 
-      kind ProjectSet.kinds[:with_project_id]
-      filter_pattern { "#{project_id}" }
+      kind ProjectBinding.kinds[:project_id]
+      value { project_id }
     end
 
     trait :for_namespace do
@@ -14,12 +14,12 @@ FactoryGirl.define do
         namespace_id 0
       end
 
-      kind ProjectSet.kinds[:with_namespace_id]
-      filter_pattern { "#{namespace_id}" }
+      kind ProjectBinding.kinds[:namespace_id]
+      value { namespace_id }
     end
 
     trait :for_all_projects do
-      kind ProjectSet.kinds[:all_projects]
+      kind ProjectBinding.kinds[:all_projects]
     end
   end
 
@@ -28,9 +28,13 @@ FactoryGirl.define do
       gitlab_project = build(:gitlab_project)
       new(
         gitlab_project,
-        build(:project_set, :for_project, project_id: gitlab_project[:id])
+        build(:project_binding, :for_project, project_id: gitlab_project[:id])
       )
     end
+  end
+
+  factory :project_parameter do
+    flag 0
   end
 
   factory :project_settings do

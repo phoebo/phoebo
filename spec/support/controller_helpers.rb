@@ -28,6 +28,8 @@ module ControllerHelpers
         end
 
       # All other methods has be defined
+      #   we do this for strict method call checking
+      #   (because we cant use instance double because we are using some of the methods)
       else
         allow(obj).to receive(method_name) do |*args|
           RSpec::Mocks::ErrorGenerator.new(obj, 'User GitlabConnector').raise_unexpected_message_error(method_name, *args)
@@ -46,7 +48,7 @@ module ControllerHelpers
     end
   end
 
-  # Load JSON payload from file
+  # Load JSON payload from a file
   def load_json(rel_path)
     data = nil
     File.open(File.expand_path('../../' + rel_path, __FILE__), 'r') do |f|
