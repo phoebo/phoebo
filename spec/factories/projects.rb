@@ -1,12 +1,25 @@
 FactoryGirl.define do
   factory :project_set do
     trait :for_project do
-        transient do
-            project_id 0
-        end
+      transient do
+        project_id 0
+      end
 
-        kind ProjectSet.kinds[:with_project_id]
-        filter_pattern { "#{project_id}" }
+      kind ProjectSet.kinds[:with_project_id]
+      filter_pattern { "#{project_id}" }
+    end
+
+    trait :for_namespace do
+      transient do
+        namespace_id 0
+      end
+
+      kind ProjectSet.kinds[:with_namespace_id]
+      filter_pattern { "#{namespace_id}" }
+    end
+
+    trait :for_all_projects do
+      kind ProjectSet.kinds[:all_projects]
     end
   end
 

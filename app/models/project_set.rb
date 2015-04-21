@@ -15,6 +15,29 @@ class ProjectSet < ActiveRecord::Base
         filter_pattern: project_id
       }
 
+      init_helper(args, options)
+    end
+
+    def for_namespace(namespace_id, options = {})
+      args = {
+        kind: self.kinds[:with_namespace_id],
+        filter_pattern: namespace_id
+      }
+
+      init_helper(args, options)
+    end
+
+    def for_all_projects(options = {})
+      args = {
+        kind: self.kinds[:all_projects]
+      }
+
+      init_helper(args, options)
+    end
+
+    private
+
+    def init_helper(args, options = {})
       if options[:init]
         self.find_or_initialize_by(args)
       else
