@@ -6,6 +6,7 @@ class BuildRequestsController < ApplicationController
   def show
     payload = {
       id: @task.id,
+      ref: @task.build_ref,
       ssh_user: 'git',
       ssh_public: @project_bindings.settings(:public_key),
       ssh_private: @project_bindings.settings(:private_key),
@@ -256,7 +257,7 @@ class BuildRequestsController < ApplicationController
 
     # TODO: we need to get namespace_id
     #  (we can't just use ProjectInfo, because we are without gitlab context)
-    @project_bindings = ProjectAccessor.new(@task.project_id)
+    @project_bindings = ProjectAccessor.new(nil, @task.project_id)
   end
 
 end
