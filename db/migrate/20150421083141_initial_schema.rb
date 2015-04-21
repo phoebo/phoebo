@@ -1,12 +1,12 @@
-class ProjectSettings < ActiveRecord::Migration
+class InitialSchema < ActiveRecord::Migration
   def change
-    create_table :project_sets do |t|
+    create_table :project_bindings do |t|
       t.integer :kind, null: false, default: 0
-      t.string :filter_pattern
+      t.integer :value
     end
 
     create_table :project_settings do |t|
-      t.belongs_to :project_set, index: true
+      t.belongs_to :project_binding, index: true
 
       t.integer :memory
       t.float :cpu
@@ -15,7 +15,7 @@ class ProjectSettings < ActiveRecord::Migration
     end
 
     create_table :project_parameters do |t|
-      t.belongs_to :project_set, index: true
+      t.belongs_to :project_binding, index: true
 
       t.text :name, null: false
       t.text :value

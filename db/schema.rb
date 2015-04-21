@@ -11,63 +11,33 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150418221939) do
+ActiveRecord::Schema.define(version: 20150421083141) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "build_requests", force: :cascade do |t|
-    t.integer "project_id", null: false
-    t.string  "secret",     null: false
-    t.string  "ref",        null: false
+  create_table "project_bindings", force: :cascade do |t|
+    t.integer "kind",  default: 0, null: false
+    t.integer "value"
   end
 
   create_table "project_parameters", force: :cascade do |t|
-    t.integer "project_set_id"
-    t.text    "name",                       null: false
+    t.integer "project_binding_id"
+    t.text    "name",                           null: false
     t.text    "value"
-    t.integer "flag",           default: 0, null: false
+    t.integer "flag",               default: 0, null: false
   end
 
-  add_index "project_parameters", ["project_set_id"], name: "index_project_parameters_on_project_set_id", using: :btree
-
-  create_table "project_sets", force: :cascade do |t|
-    t.integer "kind",           default: 0, null: false
-    t.string  "filter_pattern"
-  end
+  add_index "project_parameters", ["project_binding_id"], name: "index_project_parameters_on_project_binding_id", using: :btree
 
   create_table "project_settings", force: :cascade do |t|
-    t.integer "project_set_id"
+    t.integer "project_binding_id"
     t.integer "memory"
     t.float   "cpu"
     t.text    "public_key"
     t.text    "private_key"
   end
 
-  add_index "project_settings", ["project_set_id"], name: "index_project_settings_on_project_set_id", using: :btree
-
-  create_table "projects", force: :cascade do |t|
-    t.string "name",           null: false
-    t.string "path",           null: false
-    t.string "namespace_name", null: false
-    t.string "namespace_path", null: false
-    t.string "url",            null: false
-    t.string "repo_url",       null: false
-    t.text   "public_key",     null: false
-    t.text   "private_key",    null: false
-  end
-
-  create_table "tasks", force: :cascade do |t|
-    t.integer "build_request_id",               null: false
-    t.string  "mesos_id",         default: "",  null: false
-    t.integer "kind",             default: 0,   null: false
-    t.json    "deploy_template",                null: false
-    t.integer "state",            default: 100, null: false
-    t.string  "state_message",    default: "",  null: false
-    t.string  "name",             default: "",  null: false
-    t.json    "mesos_info",       default: {},  null: false
-  end
-
-  add_index "tasks", ["build_request_id"], name: "index_tasks_on_build_request_id", using: :btree
+  add_index "project_settings", ["project_binding_id"], name: "index_project_settings_on_project_binding_id", using: :btree
 
 end
