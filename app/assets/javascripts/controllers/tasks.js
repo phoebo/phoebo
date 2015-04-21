@@ -268,7 +268,13 @@ TasksController.prototype._createBuild = function (buildId, data) {
       $buildInfo.append($('<span class="ns-separator">/</span>'));
       $buildInfo.append($('<span class="name" />').text(data['project_name'][1]));
       $buildInfo.append($('<span class="ref-separator">@</span>'));
-      $buildInfo.append($('<span class="ref" />').text(data['build_ref']));
+
+      if(data['build_ref'].match(/[0-9a-f]{40}/))
+        ref = data['build_ref'].substring(0, 8)
+      else
+        ref = data['build_ref']
+
+      $buildInfo.append($('<span class="ref" />').text(ref));
     } else {
       $buildInfo.append($('<span class="name" />').text('Non-project tasks'));
     }

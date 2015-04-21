@@ -11,11 +11,15 @@ BuildRequestsController.prototype.new = function () {
     var branchSelect = $branchSelect[0].selectize;
     branchSelect.disable();
     branchSelect.clearOptions();
+    branchSelect.addOption({ id: -1, branch: 'Loading ...' });
+    branchSelect.addItem(-1);
+
     branchSelect.load(function (callback) {
       xhr && xhr.abort();
       xhr = $.ajax({
         url: '/projects/' + encodeURIComponent(value) + '/commits',
         success: function (results) {
+          branchSelect.clearOptions();
           branchSelect.enable();
           callback(results['commits']);
 
@@ -30,6 +34,7 @@ BuildRequestsController.prototype.new = function () {
   }
 
   $projectSelect.selectize({
+    create: true,
     onChange: updateBranchSelect
   });
 

@@ -182,11 +182,18 @@ class BuildRequestsController < ApplicationController
       }
     }
 
+    # Ref / Branch
+    if params[:build_request][:branch] =~ /[0-9a-f]{40}/
+      ref = params[:build_request][:branch]
+    else
+      ref = project_info.default_branch
+    end
+
     # Append metadata
     template[:metadata]                       ||= {}
     template[:metadata][:phoebo_name]         ||= 'Image Builder'
     template[:metadata][:phoebo_project_id]   ||= project_info.id
-    template[:metadata][:phoebo_build_ref]    ||= params[:build_request][:branch]
+    template[:metadata][:phoebo_build_ref]    ||= ref
     template[:metadata][:phoebo_build_secret] ||= build_secret
 
     # Brodcast new task
