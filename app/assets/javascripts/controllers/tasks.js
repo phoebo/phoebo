@@ -25,8 +25,22 @@ TasksController.prototype.index = function () {
       // (all initial data has been sent)
       if(data == 'subscribed') {
         if(_this.$container.find('.task-container').length == 0) {
-          _this.$container.append($noTasks = $('<div class="no-tasks" />'));
-          $noTasks.append('<h1 class="page-title">No tasks</h1>')
+
+          _this.$container.append(''
+            + '<div class="vertical-center">'
+            +   '<div class="vertical-center-container">'
+            +     '<div class="icon-container">'
+            +       '<div class="icon-block">'
+            +         '<i class="fa fa-dashboard"></i>'
+            +       '</div>'
+            +       '<div class="msg-block" />'
+            +     '</div>'
+            +   '</div>'
+            + '</div>'
+          );
+
+          _this.$container.find('.msg-block').append($noTasks = $('<div class="no-tasks" />'));
+          $noTasks.append('<h3 class="page-title">No tasks</h3>')
           $noTasks.append($msg = $('<div class="light" />'));
 
           if(_this.params['namespace_name'])
@@ -520,7 +534,20 @@ TasksController.prototype._connectionClosed = function () {
     return false;
   });
 
-  this.$container.append($closed);
+  this.$container.append(''
+    + '<div class="vertical-center">'
+    +   '<div class="vertical-center-container">'
+    +     '<div class="icon-container">'
+    +       '<div class="icon-block">'
+    +         '<i class="fa fa-dashboard"></i>'
+    +       '</div>'
+    +       '<div class="msg-block" />'
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+  );
+
+  this.$container.find('.msg-block').append($closed);
   $closed.fadeIn(400);
 };
 

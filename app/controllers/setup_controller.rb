@@ -14,6 +14,8 @@ class SetupController < ApplicationController
        root_path: root_path,
        state_done: SetupJob::STATE_DONE,
        state_failed: SetupJob::STATE_FAILED
+
+    render layout: 'simple'
   end
 
   def watch

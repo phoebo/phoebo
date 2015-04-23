@@ -19,7 +19,9 @@ SetupController.prototype.index = function () {
         // Show error when setup failed
         else if(data.state == _this.params['state_failed']) {
           UpdateStream.close();
-          $('.setup-error').text(data.state_message);
+
+          if(data.state_message)
+            $('.setup-error').text(data.state_message);
 
           $('.setup-inprogress').fadeOut(function () {
             $('.setup-failed').fadeIn();

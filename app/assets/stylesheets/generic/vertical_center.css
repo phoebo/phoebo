@@ -1,0 +1,87 @@
+/* html, body {
+  height: 100%;
+}
+
+.content-wrapper,
+.container-fluid,
+.content,
+.page-with-sidebar {
+	height: 100%;
+} */
+
+.vertical-center {
+  height:100%;
+  width:100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  padding-top: 46px;
+  padding-left: 20px;
+  padding-right: 20px;
+
+  text-align: center;
+
+  font: 0/0 a;         /* remove the gap between inline(-block) elements */
+}
+
+.page-with-sidebar .vertical-center {
+  padding-left: 80px;
+}
+
+.vertical-center:before {    /* create a full-height inline block pseudo=element */
+  content: ' ';
+  display: inline-block;
+  vertical-align: middle;  /* vertical alignment of the inline element */
+  height: 100%;
+}
+
+.vertical-center > .vertical-center-container {
+  max-width: 100%;
+
+  text-align: left;
+  display: inline-block;
+  vertical-align: middle;  /* vertical alignment of the inline element */
+  font: 16px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;        /* <-- reset the font property */
+}
+
+@media (max-width: 768px) {
+  .vertical-center {
+    padding-top: 70px;
+  }
+
+  .vertical-center:before {
+    /* height: auto; */
+    display: none;
+  }
+}
+
+
+.vertical-center .icon-container {
+  display: table;
+}
+
+.vertical-center .icon-container > * {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.vertical-center .icon-block {
+  padding-right: 50px;
+  font-size: 80px;
+}
+
+@media (max-width: 768px) {
+  .vertical-center .icon-block {
+    display: none;
+  }
+}
+
+.vertical-center P {
+  line-height: 1.7em;
+}
+
+.task-listing .vertical-center {
+    padding-top: 130px;
+}
+

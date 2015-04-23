@@ -1,2 +1,15 @@
-<h1>Login using GitLab account</h1>
-<%= link_to 'Login', login_auth_path, { class: 'btn btn-primary' } %>
+<div class="vertical-center">
+	<div class="vertical-center-container">
+		<div class="icon-container">
+			<div class="icon-block">
+				<i class="fa fa-lock"></i>
+			</div>
+			<div>
+				<h4>Login required</h4>
+				<p class="light">You need to sign in to access this application.</p>
+				<%= link_to 'Login using Gitlab', login_auth_path, { class: 'btn btn-primary' } %>
+			</div>
+		</div>
+	</div>
+</div>
+

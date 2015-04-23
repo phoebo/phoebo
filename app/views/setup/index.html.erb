@@ -1,12 +1,33 @@
-<h2>Hey! I need some time to setup!</h2>
+<div class="vertical-center">
+	<div class="vertical-center-container">
 
-<div class="setup-inprogress" style="display: none;">
-	Setup in progress
-</div>
+		<div class="icon-container setup-inprogress" style="display: none;">
+			<div class="icon-block">
+				<i class="fa fa-cog fa-spin"></i>
+			</div>
+			<div>
+				<h3>Setup in progress</h3>
+				<p class="light">Please wait until the application is set up.</p>
+				<p class="light">You will be automatically redirected once the application is ready to use.</p>
+			</div>
+		</div>
 
-<div class="setup-failed" style="display: none;">
-	Setup failed
-	<div class="setup-error"></div>
+		<div class="icon-container setup-failed" style="display: none;">
+			<div class="icon-block">
+				<i class="fa fa-warning"></i>
+			</div>
+			<div>
+				<h3>Error</h3>
+				<p class="light">Error occured while initializing the application.</p>
 
-	Please restart the server after you fix this.
+				<% if current_user_admin? %>
+				<p class="light setup-error"></p>
+				<p class="light">Please restart the application server after you fix this.</p>
+				<% else %>
+				<p class="light">Please contact the administrator.</p>
+				<% end %>
+			</div>
+		</div>
+
+	</div>
 </div>
