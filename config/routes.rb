@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
 
+  # Proxy access
+  get '/proxy_access/:request_id', to: 'proxy_access#show'
+  post '/proxy_access/:request_id', to: 'proxy_access#update'
+
+  # Startup info
   get 'setup', to: 'setup#index', as: 'setup'
   get 'setup/watch', to: 'setup#watch', as: 'watch_setup'
 
@@ -65,13 +70,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # Build requests
   resources :build_requests, only: [ :new, :create ]
   resources :build_requests, only: [ :show ], param: :request_secret
   post 'build_requests/:request_secret/tasks', to: 'build_requests#create_tasks' , as: 'build_request_tasks'
 
+  # Help
   get 'help/invalid_config', to: 'help#invalid_config'
   get 'help/no_projects', to: 'help#no_projects'
 
+  # Login
   get 'login', to: 'login#new', as: 'login'
   get 'login/auth', to: 'login#auth', as: 'login_auth'
   get 'login/callback', to: 'login#callback', as: 'login_callback'

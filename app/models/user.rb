@@ -35,4 +35,12 @@ class User
   def gitlab
     @gitlab_connector ||= GitlabConnector.new(oauth_token)
   end
+
+  def has_project?(project_id)
+    if gitlab.cached_user_projects.include?(project_id)
+      return true
+    else
+      return gitlab.user_projects.include?(project_id)
+    end
+  end
 end

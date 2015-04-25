@@ -350,26 +350,12 @@ TasksController.prototype._updateTaskActions = function ($task) {
     }
   }
 
-  // Helper for getting HTTP port of running service
-  function taskOpenUrl(taskData) {
-    if(taskData['port_mappings'] && taskData['runner_host']) {
-      for(var i in taskData['port_mappings']) {
-        if(taskData['port_mappings'][i]['containerPort'] == 80 && taskData['port_mappings'][i]['protocol'] == 'tcp') {
-           return 'http://' + taskData['runner_host'] + ':' + taskData['port_mappings'][i]['hostPort'] + '/';
-        }
-      }
-    }
-
-    return false;
-  }
-
   // Open -----------
   var $action = $taskActions.find('.open');
-  var openUrl = taskOpenUrl(taskData);
 
-  if(taskData['state'] == 'running' && openUrl) {
+  if(taskData['state'] == 'running' && taskData['proxy_url']) {
     if($action.length == 0) {
-      $taskActions.prepend($('<li class="open" />').append($('<a title="Open in browser" target="_blank"><i class="fa fa-external-link"></i></a>').attr('href', openUrl)));
+      $taskActions.prepend($('<li class="open" />').append($('<a title="Open in browser" target="_blank"><i class="fa fa-external-link"></i></a>').attr('href', taskData['proxy_url'])));
     }
   } else if($action.length > 0) {
     removeAction($action);

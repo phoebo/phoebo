@@ -4,6 +4,7 @@
 # t.float :cpu
 # t.text :public_key
 # t.text :private_key
+# t.string :proxy_password
 #
 class ProjectSettings < ActiveRecord::Base
   DEFAULTS = {

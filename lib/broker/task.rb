@@ -111,6 +111,31 @@ class Broker
       @has_output = val ? true : false
     end
 
+    def proxy_ports
+      if daemon && port_mappings
+        ports = { http: nil, https: nil }
+        port_mappings.each do |curr|
+          if curr[:protocol] == 'tcp'
+            case curr[:containerPort]
+            when 80
+              ports[:http] = curr[:hostPort]
+            when 443
+              ports[:https] = curr[:hostPort]
+            end
+          end
+        end
+
+        return ports if ports[:http] || ports[:https]
+      end
+
+      nil
+    end
+
+    def service_name
+      str = name.downcase.gsub(/[^a-z0-9\-_]+/, '-').squeeze
+      str += "-#{project_id}" if project_id
+    end
+
     # --------------------------------------------------------------------------
 
     class << self

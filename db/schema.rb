@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150421083141) do
+ActiveRecord::Schema.define(version: 20150425113017) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -36,6 +36,7 @@ ActiveRecord::Schema.define(version: 20150421083141) do
     t.float   "cpu"
     t.text    "public_key"
     t.text    "private_key"
+    t.string  "proxy_password"
   end
 
   add_index "project_settings", ["project_binding_id"], name: "index_project_settings_on_project_binding_id", using: :btree

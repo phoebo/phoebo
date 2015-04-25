@@ -59,6 +59,11 @@ class TasksController < ApplicationController
               data[:project_name] = [ project[:namespace][:name], project[:name] ]
             end
 
+            # Add proxy info
+            if (data[:port_mappings] || data[:daemon]) && url = Phoebo::ProxyAccessRoute.build_url(new_task)
+              data[:proxy_url] = url
+            end
+
             # Add state no matter what
             data[:state] = new_task.state
 

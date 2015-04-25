@@ -89,7 +89,7 @@ class ProjectSettingsController < ApplicationController
 
     # Settings
     permitted[:settings_attributes] = [
-      :id, :cpu, :memory
+      :id, :cpu, :memory, :proxy_password
     ]
 
     # Basic params attributes

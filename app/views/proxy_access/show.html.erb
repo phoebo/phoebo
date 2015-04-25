@@ -1,0 +1,42 @@
+<%= form_for :proxy_access do |f| %>
+<div class="vertical-center proxy-access">
+  <div class="vertical-center-container">
+    <div class="icon-container">
+      <div class="icon-block">
+        <i class="fa fa-lock"></i>
+      </div>
+      <div>
+        <h4>Authorization required</h4>
+
+        <% if current_user_allowed? %>
+          <p class="light">Autorization required for accessing this service.</p>
+          <%= f.submit 'Allow', class: 'btn btn-primary' %>
+        <% elsif project_password? %>
+          <p class="light">Autorization required for accessing this service.</p>
+
+          <% flash.each do |name, msg| %>
+          <div class="alert alert-<%= name %>">
+            <p><%= msg %></p>
+          </div>
+          <% end %>
+
+          <%= f.password_field :password, class: 'form-control', placeholder: 'Password' %>
+
+          <div class="buttons">
+            <% unless current_user? %>
+              <a href="<%= login_auth_path %>" class="btn btn-default" tabindex="-1">Login using Gitlab</a>
+            <% end %>
+
+            <%= f.submit 'Authorize', class: 'btn btn-primary' %>
+          </div>
+
+        <% else %>
+          <p class="light">You are not allowed to access this service.</p>
+        <% end %>
+
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
