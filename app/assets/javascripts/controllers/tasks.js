@@ -382,7 +382,15 @@ TasksController.prototype._updateTaskActions = function ($task) {
           $block.append($info = $('<div />'));
           $info.append('<div class="task-stripe">&nbsp;</div>');
           $info.append('<p class="title">Info:</p>');
-          $info.append($('<p />').text(JSON.stringify(_taskData)));
+
+          $info.append($('<p data-key="request_id"><strong>Request ID:</strong> <span class="value" /> <span data-key="request_url" style="display: none;">(<a href="#" target="_blank">Show in Singularity</a></span>)</p>').hide());
+          $info.append($('<p data-key="run_id"><strong>Run ID:</strong> <span class="value" /></p>').hide());
+          $info.append($('<p data-key="runner_slave_id"><strong>Runner:</strong> <span class="value" /> <span data-key="runner_host" style="display: none;">(<span class="value" />)</span></p>').hide());
+          $info.append($('<p data-key="state_message"><strong>State message:</strong> <span class="value" /></p>').hide());
+
+          _this._updateInfo($_task);
+
+          // $info.append($('<p />').text(JSON.stringify(_taskData)));
         }, onBlockHide);
       });
     }
@@ -452,6 +460,28 @@ TasksController.prototype._updateTaskActions = function ($task) {
     }
   } else if($action.length > 0) {
     removeAction($action);
+  }
+};
+
+TasksController.prototype._updateInfo = function ($task) {
+  var taskData = $task.data('task-data');
+  var $infoBlock = $task.find('.task-extended-info');
+
+  if($infoBlock.length && $infoBlock.data('type') == 'info') {
+    for(key in taskData) {
+      var p = $infoBlock.find('[data-key="' + key + '"]')
+
+      if(taskData[key]) {
+        p.find('.value').text(taskData[key]);
+        p.show();
+      } else {
+        p.hide();
+      }
+    }
+
+    if(taskData['request_url']) {
+      $infoBlock.find('[data-key="request_url"] A').attr('href', taskData['request_url'])
+    }
   }
 };
 

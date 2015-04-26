@@ -75,6 +75,13 @@ class TasksController < ApplicationController
               end
             end
 
+            # Add Singularity task link
+            if current_user.is_admin
+              if data[:request_id] && base_url = Rails.configuration.x.singularity.url
+                data[:request_url] = "#{base_url}/request/#{data[:request_id]}"
+              end
+            end
+
             # Add state no matter what
             data[:state] = new_task.state
 
