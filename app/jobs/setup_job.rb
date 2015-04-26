@@ -45,8 +45,13 @@ class SetupJob
     Rails.application.broker = Broker.new(fetch_tasks)
 
     # Install Singularity webhooks
+    Rails.logger.info("Registering Singularity REQUEST webhook for: #{urls[:request_webhook]}")
     @singularity.install_webhook('phoebo-request', urls[:request_webhook], :REQUEST)
+
+    Rails.logger.info("Registering Singularity TASK webhook for: #{urls[:task_webhook]}")
     @singularity.install_webhook('phoebo-task', urls[:task_webhook], :TASK)
+
+    Rails.logger.info("Registering Singularity DEPLOY webhook for: #{urls[:deploy_webhook]}")
     @singularity.install_webhook('phoebo-deploy', urls[:deploy_webhook], :DEPLOY)
 
     # Kill all logspout tasks
