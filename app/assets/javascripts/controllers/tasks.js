@@ -176,15 +176,9 @@ TasksController.prototype.index = function () {
               break;
 
 
-            case 'deploying':
+            case 'deploy_started':
               stateIcon = 'fa-cloud-upload';
-              stateText = 'Deploying';
-              stateClass = 'task-yellow';
-              break;
-
-            case 'deployed':
-              stateIcon = 'fa-cloud-upload';
-              stateText = 'Deployed';
+              stateText = 'Starting';
               stateClass = 'task-yellow';
               break;
 

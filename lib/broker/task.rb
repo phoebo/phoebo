@@ -15,35 +15,29 @@ class Broker
       # Error when sending task to Singularity (async job failed)
       request_failed:     1 + ERROR_STATE_THRESHOLD,
 
-      # Task is being deployed by Singularity
-      deploying:          2,
-
-      # Task is marked as deployed by Singularity
-      deployed:           3,
-
-      # Task deploy failed (sent by Singularity)
-      deploy_failed:      3 + ERROR_STATE_THRESHOLD,
+      # Task deploy is started by Singularity
+      deploy_started:     2,
 
       # Task has been launched by Singularity
-      launched:           4,
+      launched:           3,
 
       # Task is marked as running by Singularity
-      running:            5,
+      running:            4,
 
       # Task has finished running and exited with success error (sent by Singularity)
-      finished:           6 + STEADY_STATE_THRESHOLD,
+      finished:           5 + STEADY_STATE_THRESHOLD,
 
       # Task was running but exited with error code (sent by Singularity)
-      failed:             6 + ERROR_STATE_THRESHOLD,
+      failed:             5 + ERROR_STATE_THRESHOLD,
 
       # Task is being deleted (async job started)
-      deleting:           7,
+      deleting:           6,
 
       # Task was deleted successfully (async job succeeded)
-      deleted:            8,
+      deleted:            7,
 
       # Task deletion failed (async job failed)
-      delete_failed:      8 + ERROR_STATE_THRESHOLD
+      delete_failed:      7 + ERROR_STATE_THRESHOLD
     }
 
     # Define all states as Broker::Task::STATE_* constants

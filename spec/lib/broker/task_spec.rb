@@ -30,8 +30,8 @@ RSpec.describe Broker::Task do
       expect(described_class.valid_prev_states :requested).to eq([ :fresh ])
     end
 
-    it ':deploying' do
-      expect(described_class.valid_prev_states :deploying).to eq([ :fresh, :requested ])
+    it ':deploy_started' do
+      expect(described_class.valid_prev_states :deploy_started).to eq([ :fresh, :requested ])
     end
   end
 

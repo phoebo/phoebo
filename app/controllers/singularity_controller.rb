@@ -59,17 +59,19 @@ class SingularityController < ApplicationController
 
     case params[:eventType]
     when 'STARTING'
-      state = Broker::Task::STATE_DEPLOYING
+      state = Broker::Task::STATE_DEPLOY_STARTED
+
+      broker.update_task(task.id) do |task|
+        if task.valid_next_state?(state)
+          task.state = state
+        end
+      end
+
     when 'FINISHED'
-      state = Broker::Task::STATE_DEPLOYED
+      # ...
+
     else
       raise Error.new("Unexpected event type")
-    end
-
-    broker.update_task(task.id) do |task|
-      if task.valid_next_state?(state)
-        task.state = state
-      end
     end
 
     head :ok
