@@ -1,6 +1,6 @@
 local regex = [=[(([0-9a-f]{8})\.)?([^\.]+)\.[^\.]+\.[^\.]+$]=]
 local m = ngx.re.match(ngx.var.http_host, regex)
-if m then
+if m and string.sub(ngx.var.http_host, 0 - string.len(ngx.var.server_name) - 1) == ("." .. ngx.var.server_name) then
     local service, ref = m[3], m[1]
 
     local phoebo_token = ngx.var.cookie_phoebo_token;
@@ -96,6 +96,6 @@ if m then
         -- (we handle actual expiration by Redis)
         ngx.header["Set-Cookie"] = "phoebo_token=" .. request_id .. "; Path=/"
 
-        ngx.redirect(ngx.var.phoebo_proxy_url .. "/" .. request_id)
+        ngx.redirect("http://" .. ngx.var.server_name .. "/proxy_access/" .. request_id)
     end
 end
