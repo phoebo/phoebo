@@ -60,8 +60,19 @@ class TasksController < ApplicationController
             end
 
             # Add proxy info
-            if (data[:port_mappings] || data[:daemon]) && url = Phoebo::ProxyAccessRoute.build_url(new_task)
-              data[:proxy_url] = url
+            if (data[:port_mappings] || data[:daemon])
+              if service_name = new_task.service_name && ports = new_task.proxy_ports
+                url = ports[:http] ? 'http://' : 'https://'
+
+                if new_task.build_ref
+                  url += new_task.build_ref[0...8] + '.'
+                end
+
+                url += new_task.service_name + '.'
+                url += URI(request.url).host
+
+                data[:proxy_url] = url
+              end
             end
 
             # Add state no matter what
