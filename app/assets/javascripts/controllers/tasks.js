@@ -133,19 +133,10 @@ TasksController.prototype.index = function () {
             $el = $task;
           }
 
-          $el.slideUp(400, function () {
-            $el.remove();
-
-            // TODO: Check container again, because of the animation (more tasks can be removed simultaneously)
-            // => ensures that the last one will remove the container
-            // if($el.hasClass('task')) {
-            //   var $container = $task.closest('.task-container');
-            //   if($container.find('.task').length == 0) {
-            //     $task.closest('.task-container').slideUp(400, function () {
-            //       $container.remove();
-            //     });
-            //   }
-            // }
+          $task.slideUp(400, function () {
+            var $container = $(this).closest('.task-container');
+            $(this).remove();
+            $container.trigger('task.removed');
           });
         }
 
@@ -273,6 +264,16 @@ TasksController.prototype._createTask = function (taskId, data) {
 
 TasksController.prototype._createBuild = function (buildId, data) {
     $build = $('<section class="task-container" />').attr('data-build-id', buildId);
+
+    $build.on('task.removed', function () {
+      var $_build = $(this);
+
+      if($_build.find('.panel-collapse').children().length == 0) {
+        $_build.stop().slideUp(400, function () {
+          $_build.remove();
+        });
+      }
+    });
 
     var $buildInfo = $('<header />');
     var buildPanelId = 'build-panel-' + buildId;
