@@ -14,35 +14,45 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:task_id) {{ project_id: 39, build_request_id: 47, task_id: 170 }}
-  let(:task_mesos_id) { 'phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT' }
-  let(:task_template) { load_json('controllers/examples/singularity_task_webhook.json') }
-
-  let(:payload_task_launched) do
-    data = task_template.dup
-    data[:taskUpdate][:taskState] = 'TASK_LAUNCHED'
-    data
+  let(:task) do
+    build(:broker_task, request_id: 'phoebo-1429653396-1')
   end
 
-  let(:payload_task_failed) do
-    data = task_template.dup
-    data[:taskUpdate][:taskState] = 'TASK_FAILED'
-    data[:taskUpdate][:statusMessage] = 'Command exited with status 127'
-    data
+  let(:broker) do
+    Broker.new([task])
+  end
+
+  before do
+    allow(subject).to receive(:broker).and_return(broker)
   end
 
   # ----------------------------------------------------------------------------
 
   describe 'POST task' do
+    let(:task_template) { load_json('controllers/examples/singularity_task_webhook.json') }
+
+    let(:payload_task_launched) do
+      data = task_template.dup
+      data[:taskUpdate][:taskState] = 'TASK_LAUNCHED'
+      data
+    end
+
+    let(:payload_task_failed) do
+      data = task_template.dup
+      data[:taskUpdate][:taskState] = 'TASK_FAILED'
+      data[:taskUpdate][:statusMessage] = 'Command exited with status 127'
+      data
+    end
+
     it 'handles TASK_LAUNCHED' do
-      expect(subject).to receive(:update_task).with(task_id, anything)
+      expect(subject.broker).to receive(:update_task).with(task.id)
 
       post :task_webhook, create_payload(payload_task_launched), format: :json
       expect(response).to have_http_status(:ok)
     end
 
     it 'handles TASK_FAILED' do
-      expect(subject).to receive(:update_task).with(task_id, anything)
+      expect(subject.broker).to receive(:update_task).with(task.id)
 
       post :task_webhook, create_payload(payload_task_failed), format: :json
       expect(response).to have_http_status(:ok)
@@ -51,37 +61,34 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:deploy_task_id) {{ task_id: 8 }}
-  let(:deploy_template) { load_json('controllers/examples/singularity_deploy_webhook.json') }
-
-  let(:payload_deploy_starting) do
-    data = deploy_template.dup
-    data[:eventType] = 'STARTING'
-    data
-  end
-
-  let(:payload_deploy_finished) do
-    data = deploy_template.dup
-    data[:eventType] = 'FINISHED'
-    data[:deployResult] = {
-      deployState: 'SUCCEEDED',
-      message: 'Request not deployable',
-      timestamp: 1427652989966
-    }
-    data
-  end
-
-  # ----------------------------------------------------------------------------
-
   describe 'POST deploy' do
+    let(:deploy_template) { load_json('controllers/examples/singularity_deploy_webhook.json') }
+
+    let(:payload_deploy_starting) do
+      data = deploy_template.dup
+      data[:eventType] = 'STARTING'
+      data
+    end
+
+    let(:payload_deploy_finished) do
+      data = deploy_template.dup
+      data[:eventType] = 'FINISHED'
+      data[:deployResult] = {
+        deployState: 'SUCCEEDED',
+        message: 'Request not deployable',
+        timestamp: 1427652989966
+      }
+      data
+    end
+
     it 'handles deploy STARTING' do
-      expect(subject).to receive(:update_task).with(deploy_task_id, state: :deploying)
+      expect(subject.broker).to receive(:update_task).with(task.id)
       post :deploy_webhook, create_payload(payload_deploy_starting), format: :json
       expect(response).to have_http_status(:ok)
     end
 
     it 'handles deploy FINISHED' do
-      expect(subject).to receive(:update_task).with(deploy_task_id, state: :deployed)
+      expect(subject.broker).to receive(:update_task).with(task.id)
       post :deploy_webhook, create_payload(payload_deploy_finished), format: :json
       expect(response).to have_http_status(:ok)
     end
@@ -89,44 +96,20 @@ RSpec.describe SingularityController, type: :controller do
 
   # ----------------------------------------------------------------------------
 
-  let(:request_task_id) {{ task_id: 2 }}
-  let(:request_template) { load_json('controllers/examples/singularity_request_webhook.json') }
-
-  let(:payload_request_deleted) do
-    data = request_template.dup
-    data[:eventType] = 'DELETED'
-    data
-  end
-
-  # ----------------------------------------------------------------------------
-
   describe 'POST request' do
+    let(:request_template) { load_json('controllers/examples/singularity_request_webhook.json') }
+
+    let(:payload_request_deleted) do
+      data = request_template.dup
+      data[:eventType] = 'DELETED'
+      data
+    end
+
     it 'handles request DELETED' do
-      expect(subject).to receive(:update_task).with(request_task_id, state: :deleted)
+      expect(subject.broker).to receive(:update_task).with(task.id)
       post :request_webhook, create_payload(payload_request_deleted), format: :json
       expect(response).to have_http_status(:ok)
     end
   end
 
-  # ----------------------------------------------------------------------------
-
-  let(:task) { create(:task) }
-  let(:redis_key) { Redis.key_for_task_updates(task_id: task.id) }
-
-  describe '.update_task' do
-    it 'updates DB record and publishes update to Redis' do
-      update = {
-        mesos_id: 'phoebo-p1-b1-t5-2-1427645113738-1-mesos.local-DEFAULT',
-        state: :failed,
-        state_message: 'Command exited with status 127'
-      }
-
-      expect(redis).to receive(:publish).with(redis_key, update.to_json)
-      subject.send(:update_task, { task_id: task.id }, update)
-
-      modified_task = Task.find(task.id)
-      expect(modified_task.failed?).to be true
-      expect(modified_task.state_message).to eq(update[:state_message])
-    end
-  end
 end

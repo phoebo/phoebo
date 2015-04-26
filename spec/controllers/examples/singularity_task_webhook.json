@@ -2,11 +2,11 @@
   "task": {
     "taskRequest": {
       "request": {
-        "id": "phoebo-p39-b47-t170",
+        "id": "phoebo-1429653396-1",
         "daemon": false
       },
       "deploy": {
-        "requestId": "phoebo-p39-b47-t170",
+        "requestId": "phoebo-1429653396-1",
         "id": "1",
         "command": "/usr/bin/node",
         "arguments": [
@@ -38,24 +38,24 @@
       },
       "pendingTask": {
         "pendingTaskId": {
-          "requestId": "phoebo-p39-b47-t170",
+          "requestId": "phoebo-1429653396-1",
           "deployId": "1",
           "nextRunAt": 1427988067814,
           "instanceNo": 1,
           "pendingType": "ONEOFF",
           "createdAt": 1427988067621,
-          "id": "phoebo-p39-b47-t170-1-1427988067814-1-ONEOFF-1427988067621"
+          "id": "phoebo-1429653396-1-1-1427988067814-1-ONEOFF-1427988067621"
         }
       }
     },
     "taskId": {
-      "requestId": "phoebo-p39-b47-t170",
+      "requestId": "phoebo-1429653396-1",
       "deployId": "1",
       "instanceNo": 1,
       "host": "mesos.local",
       "rackId": "DEFAULT",
-      "startedAt": 1427988069527,
-      "id": "phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT"
+      "startedAt": 1429653400825,
+      "id": "phoebo-1429653396-1-1-1429653400825-1-mesos.local-DEFAULT"
     },
     "offer": {
       "id": {
@@ -119,9 +119,9 @@
       "executorIds": null
     },
     "mesosTask": {
-      "name": "phoebo-p39-b47-t170",
+      "name": "phoebo-1429653396-1",
       "taskId": {
-        "value": "phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT"
+        "value": "phoebo-1429653396-1-1-1429653400825-1-mesos.local-DEFAULT"
       },
       "slaveId": {
         "value": "20150401-205520-16842879-5050-1950-S0"
@@ -167,7 +167,7 @@
             },
             {
               "name": "TASK_REQUEST_ID",
-              "value": "phoebo-p39-b47-t170"
+              "value": "phoebo-1429653396-1"
             },
             {
               "name": "TASK_DEPLOY_ID",
@@ -215,13 +215,13 @@
   },
   "taskUpdate": {
     "taskId": {
-      "requestId": "phoebo-p39-b47-t170",
+      "requestId": "phoebo-1429653396-1",
       "deployId": "1",
       "instanceNo": 1,
       "host": "mesos.local",
       "rackId": "DEFAULT",
-      "startedAt": 1427988069527,
-      "id": "phoebo-p39-b47-t170-1-1427988069527-1-mesos.local-DEFAULT"
+      "startedAt": 1429653400825,
+      "id": "phoebo-1429653396-1-1-1429653400825-1-mesos.local-DEFAULT"
     },
     "timestamp": 1427988069816,
     "taskState": "TASK_RUNNING"
