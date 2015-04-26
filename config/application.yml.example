@@ -14,6 +14,10 @@ defaults: &defaults
   redis:
     host: '127.0.0.1'
 
+  logspout:
+    webhook:
+      url: 'ws://172.17.42.1:80'
+
 development:
   <<: *defaults
 

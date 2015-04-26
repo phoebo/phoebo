@@ -1,0 +1,32 @@
+<div class="vertical-center">
+	<div class="vertical-center-container">
+		<div class="icon-container">
+			<div class="icon-block">
+				<i class="fa fa-warning"></i>
+			</div>
+			<div>
+				<h4>Invalid configuration</h4>
+
+				<% if Rails.env == 'production' %>
+					<p class="light">
+						Please contact your administrator.
+					</p>
+				<% else %>
+					<% config, key, message = @errors.first %>
+					<% if config %>
+						<p class="light">
+							<strong><%= config.class.absolute_key(key).join('.') %>:</strong>
+							<%= message %>
+						</p>
+					<% else %>
+						<p class="light">
+							<%= message %>
+						</p>
+					<% end %>
+					<%= link_to 'Show help', help_configuration_path, { class: 'btn btn-primary' } %>
+				<% end %>
+			</div>
+		</div>
+	</div>
+</div>
+

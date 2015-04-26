@@ -52,7 +52,10 @@ class ApplicationController < ActionController::Base
   end
 
   def check_config
-    redirect_to help_invalid_config_path unless self.class.valid_config?
+    if Phoebo.config.errors?
+      @errors = Phoebo.config.errors
+      render 'invalid_config', layout: 'simple'
+    end
   end
 
   def check_setup
@@ -64,16 +67,4 @@ class ApplicationController < ActionController::Base
       end
     end
   end
-
-  def self.valid_config?
-    if @valid_config.nil?
-      server = Rails.configuration.x.gitlab_server
-
-      error = server.blank? || server.url.blank? || server.app_id.blank? || server.app_secret.blank?
-      @valid_config = !error
-    end
-
-    @valid_config
-  end
-
 end

@@ -4,7 +4,7 @@ class SingularityConnector
 
   # Constructor
   def initialize(config = nil)
-    @config = config || Rails.configuration.x.singularity
+    @config = config || Phoebo.config.singularity
   end
 
   # Install webhook if necessary

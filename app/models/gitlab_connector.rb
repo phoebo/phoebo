@@ -48,7 +48,7 @@ class GitlabConnector
 
   def initialize(oauth_token)
     @oauth_token = oauth_token
-    @base_url = Rails.configuration.x.gitlab_server.url + API_PREFIX
+    @base_url = Phoebo.config.gitlab_server.url + API_PREFIX
   end
 
   # Fetches info about associated user

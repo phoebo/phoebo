@@ -10,7 +10,7 @@ class BuildRequestsController < ApplicationController
       ssh_user: 'git',
       ssh_public: @project_bindings.settings(:public_key),
       ssh_private: @project_bindings.settings(:private_key),
-      ping_url: build_request_tasks_url(@task.build_secret, Rails.configuration.x.url),
+      ping_url: build_request_tasks_url(@task.build_secret, Phoebo.config.url),
       params: @project_bindings.effective_params
     }
 
@@ -139,7 +139,7 @@ class BuildRequestsController < ApplicationController
 
     # Request URL
     build_secret = SecureRandom.hex
-    url = build_request_url(build_secret, Rails.configuration.x.url)
+    url = build_request_url(build_secret, Phoebo.config.url)
 
     # For testing
     # template = {

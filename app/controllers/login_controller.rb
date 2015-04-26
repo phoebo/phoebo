@@ -25,7 +25,7 @@ class LoginController < ApplicationController
     user_profile[:oauth_token] = token
 
     # Add profile url
-    user_profile[:profile_url] = Rails.configuration.x.gitlab_server.url + "/u/#{Rack::Utils.escape(user_profile[:username])}"
+    user_profile[:profile_url] = Phoebo.config.gitlab_server.url + "/u/#{Rack::Utils.escape(user_profile[:username])}"
 
     if user_profile && sign_in(user_profile)
       redirect_to root_path
@@ -44,10 +44,10 @@ class LoginController < ApplicationController
 
   def client
     @client ||= ::OAuth2::Client.new(
-      Rails.configuration.x.gitlab_server.app_id,
-      Rails.configuration.x.gitlab_server.app_secret,
+      Phoebo.config.gitlab_server.app_id,
+      Phoebo.config.gitlab_server.app_secret,
       {
-        site: Rails.configuration.x.gitlab_server.url,
+        site: Phoebo.config.gitlab_server.url,
         authorize_url: 'oauth/authorize',
         token_url: 'oauth/token'
       }

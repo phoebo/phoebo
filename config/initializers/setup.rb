@@ -4,7 +4,7 @@ module Phoebo
 
     # Start setup job after application initalization
     config.after_initialize do |app|
-      if defined?(Rails::Server)
+      if defined?(Rails::Server) && Phoebo.config && !Phoebo.config.errors?
         app.reload_routes!
 
         # TODO: save secret for later check
@@ -15,7 +15,7 @@ module Phoebo
           request_webhook: url_helpers.singularity_request_webhook_url(secret),
           task_webhook:    url_helpers.singularity_task_webhook_url(secret),
           deploy_webhook:  url_helpers.singularity_deploy_webhook_url(secret),
-          logspout:        url_helpers.logspout_url(secret, protocol: 'ws://', port: 81).gsub(/:81\//, ':80/')
+          logspout:        Phoebo.config.logspout.webhook.url + url_helpers.logspout_path(secret)
         }
 
         app.setup_thread = Thread.new do |t|

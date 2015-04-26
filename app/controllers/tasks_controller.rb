@@ -77,7 +77,7 @@ class TasksController < ApplicationController
 
             # Add Singularity task link
             if current_user.is_admin
-              if data[:request_id] && base_url = Rails.configuration.x.singularity.url
+              if data[:request_id] && base_url = Phoebo.config.singularity.url
                 data[:request_url] = "#{base_url}/request/#{data[:request_id]}"
               end
             end
@@ -155,7 +155,7 @@ class TasksController < ApplicationController
     @projects = current_user.gitlab.cached_user_projects
 
     if @projects.empty?
-      redirect_to help_no_projects_path
+      render 'no_projects'
       return
     end
 
