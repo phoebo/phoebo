@@ -26,8 +26,17 @@ module Phoebo
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
     config.active_job.queue_adapter = :sidekiq
-    config.log_level = :warn
 
-    config.web_console.whitelisted_ips = '10.10.3.3'
+    # Define on_rackup handler
+    def on_rackup(&block)
+      if block_given?
+        @on_rackup ||= []
+        @on_rackup << block
+      elsif @on_rackup
+        @on_rackup.each do |proc|
+          proc.call
+        end
+      end
+    end
   end
 end

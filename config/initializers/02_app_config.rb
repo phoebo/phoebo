@@ -63,7 +63,16 @@ module Phoebo
         routes.default_url_options[k] = v
       end
     end
+
+    # Load config after application initalization
+    config.after_initialize do |app|
+      app.on_rackup do
+        # Apply default URL options
+        Phoebo.config.url.each do |k, v|
+          routes.default_url_options[k] = v
+        end
+      end
+    end
   end
 end
 
-Phoebo::Application.load_app_config if defined?(Rails::Server)
