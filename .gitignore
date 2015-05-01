@@ -18,3 +18,5 @@
 .DS_Store
 config/application.yml
 config/database.yml
+config/puma.rb
+config/initializers/00_vagrant.rb
