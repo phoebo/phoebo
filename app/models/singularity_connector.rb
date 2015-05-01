@@ -2,6 +2,21 @@ class SingularityConnector
 
   attr_reader :config
 
+  DEFAULT_DEPLOY = {
+    containerInfo: {
+        type: 'DOCKER',
+        docker: {
+          image: 'debian:latest'
+        }
+    },
+    resources: {
+      cpus: 0.1,
+      memoryMb: 128,
+      numPorts: 0
+    },
+    skipHealthchecksOnDeploy: false
+  }
+
   # Constructor
   def initialize(config = nil)
     @config = config || Phoebo.config.singularity
@@ -85,20 +100,9 @@ class SingularityConnector
   def create_deploy(request_info, deploy_info)
     deploy_payload = {
       requestId: request_info[:request][:id],
-      id: 1,
-      containerInfo: {
-          type: 'DOCKER',
-          docker: {
-            image: 'debian:latest'
-          }
-      },
-      resources: {
-        cpus: 0.1,
-        memoryMb: 128,
-        numPorts: 0
-      },
-      skipHealthchecksOnDeploy: false
-    }.deep_merge(deploy_info)
+      id: 1
+
+    }.deep_merge(DEFAULT_DEPLOY).deep_merge(deploy_info)
 
     # Check for existing active deploy
     active_deploy = false
