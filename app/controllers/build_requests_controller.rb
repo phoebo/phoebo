@@ -160,7 +160,7 @@ class BuildRequestsController < ApplicationController
     #   arguments: [ 'phoebo', '--from-url', url, '--repo-url', repo_url ],
     #   containerInfo: {
     #     docker: {
-    #       image: 'phoebo/phoebo:latest',
+    #       image: 'phoebo/image-builder:latest',
     #       privileged: true
     #     }
     #   }
@@ -178,7 +178,7 @@ class BuildRequestsController < ApplicationController
           { hostPath: '/var/run/docker.sock', containerPath: '/tmp/docker.sock', mode: 'RW' }
         ],
         docker: {
-          image: 'phoebo/phoebo:latest'
+          image: 'phoebo/image-builder:latest'
         }
       }
     }
