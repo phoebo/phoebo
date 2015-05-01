@@ -88,7 +88,6 @@ RSpec.describe SingularityController, type: :controller do
     end
 
     it 'handles deploy FINISHED' do
-      expect(subject.broker).to receive(:update_task).with(task.id)
       post :deploy_webhook, create_payload(payload_deploy_finished), format: :json
       expect(response).to have_http_status(:ok)
     end
