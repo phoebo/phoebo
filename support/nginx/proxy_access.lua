@@ -86,12 +86,6 @@ if m and string.sub(ngx.var.http_host, 0 - string.len(ngx.var.server_name) - 1) 
             return ngx.exit(500)
         end
 
-        -- Redirect to Phoebo CI
-        if not ngx.var.phoebo_proxy_url then
-            ngx.log(ngx.ERR, "phoebo_proxy_url not set")
-            return ngx.exit(500)
-        end
-
         -- Save token into cookie until the browser is closed
         -- (we handle actual expiration by Redis)
         ngx.header["Set-Cookie"] = "phoebo_token=" .. request_id .. "; Path=/"
