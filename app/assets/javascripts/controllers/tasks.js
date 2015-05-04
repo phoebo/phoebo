@@ -95,7 +95,7 @@ TasksController.prototype.index = function () {
               $logBlock.append($('<p>').html(log));
 
               if(data[taskId]['batch'] != true) {
-                $logBlock.stop().animate({ scrollTop: $inner[0].scrollHeight }, 200);
+                $logBlock.stop().animate({ scrollTop: $logBlock[0].scrollHeight }, 200);
               }
             }
           }
@@ -109,7 +109,7 @@ TasksController.prototype.index = function () {
             var $preloader = $infoBlock.find('.preloader');
 
             if($preloader.length == 0) {
-              $logBlock.stop().animate({ scrollTop: $inner[0].scrollHeight}, 200);
+              $logBlock.stop().animate({ scrollTop: $logBlock[0].scrollHeight}, 200);
             } else {
               // Prevent sliding all the way up when preloader is hidden
               var prev = $infoBlock.css('min-height');
