@@ -130,14 +130,17 @@ class Broker
   def log_task_output(task_run_id, output)
     @log_manager.write(task_run_id, output)
 
-    if task_id = @run_ids.get(task_run_id) && task = task(task_id)
-      # If task doesn't have an output, it will be sent to all subscribers
-      # once the has_output flag is true, so there is no need to broadcast
-      if task.has_output?
-        broadcast :task_output, task, output
-      else
-        task = update_task(task.id) do |task|
-          task.has_output = true
+    if task_id = @run_ids.get(task_run_id)
+      if task = task(task_id)
+
+        # If task doesn't have an output, it will be sent to all subscribers
+        # once the has_output flag is true, so there is no need to broadcast
+        if task.has_output?
+          broadcast :task_output, task, output
+        else
+          task = update_task(task.id) do |task|
+            task.has_output = true
+          end
         end
       end
     end
