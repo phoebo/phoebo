@@ -40,7 +40,7 @@ class Broker
           new_filter = new_filter.store(key,
             new_filter.fetch(key, nil).nil? \
               ? Hamster.vector(*value) \
-              : new_filter.fetch(key) + value
+              : new_filter.fetch(key) + Hamster.vector(*value)
           )
         end
 
