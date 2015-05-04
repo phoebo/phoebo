@@ -148,6 +148,7 @@ TasksController.prototype.index = function () {
           // Update task data
           var taskData = $task.data('task-data');
           for(var key in data[taskId]) taskData[key] = data[taskId][key];
+          if(taskData['id'] == undefined) taskData['id'] = taskId;
           $task.data('task-data', taskData);
 
           // Update task actions
